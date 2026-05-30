@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手机氛围灯形态与动效调试台</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="workspace">
+      <section class="device-bay" aria-label="手机氛围灯预览">
+        <div class="bay-topline">
+          <div>
+            <p class="kicker">Light Motion Bench</p>
+            <h1>手机氛围灯形态与动效调试台</h1>
+          </div>
+          <div class="status-chip" id="statusChip">LIVE</div>
+        </div>
+
+        <div class="phone-frame">
+          <div class="phone-metal">
+            <div class="camera-cluster" aria-hidden="true">
+              <span class="camera-wide"></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <svg class="light-canvas" viewBox="0 0 300 300" aria-label="氛围灯路径预览">
+              <defs>
+                <linearGradient id="rainbowStroke" x1="22%" y1="12%" x2="82%" y2="88%">
+                  <stop offset="0%" stop-color="#39f5ce" />
+                  <stop offset="24%" stop-color="#7cf26d" />
+                  <stop offset="48%" stop-color="#ffd45f" />
+                  <stop offset="72%" stop-color="#ff6d7a" />
+                  <stop offset="100%" stop-color="#61a8ff" />
+                  <animateTransform
+                    attributeName="gradientTransform"
+                    type="rotate"
+                    from="0 0.5 0.5"
+                    to="360 0.5 0.5"
+                    dur="18s"
+                    repeatCount="indefinite"
+                  />
+                </linearGradient>
+                <filter id="softGlow" x="-45%" y="-45%" width="190%" height="190%">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feColorMatrix
+                    in="blur"
+                    type="matrix"
+                    values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.75 0"
+                    result="glow"
+                  />
+                  <feMerge>
+                    <feMergeNode in="glow" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path id="previewTrack" class="preview-track" />
+              <g id="ledLayer" class="led-layer" aria-label="灯珠分组显示"></g>
+              <path id="previewGlow" class="preview-glow" filter="url(#softGlow)" />
+              <path id="previewLight" class="preview-light" filter="url(#softGlow)" />
+              <path id="previewLightAlt" class="preview-light preview-light-alt" filter="url(#softGlow)" />
+              <g id="rainbowFlowLayer" class="rainbow-flow-layer" filter="url(#softGlow)" aria-hidden="true"></g>
+              <g id="motionLayer" class="motion-layer" filter="url(#softGlow)" aria-hidden="true"></g>
+              <g id="sparkLayer" class="spark-layer"></g>
+            </svg>
+
+            <div class="mode-readout">
+              <span id="modeName">常亮环</span>
+              <small id="modeDesc">整圈稳定点亮，适合功能开启或状态确认</small>
+            </div>
+
+            <div class="hardware-lines" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-bar" aria-label="当前参数">
+          <div>
+            <span>形状</span>
+            <strong id="shapeReadout">圆形</strong>
+          </div>
+          <div>
+            <span>灯组</span>
+            <strong id="groupReadout">4组</strong>
+          </div>
+          <div>
+            <span>总灯数</span>
+            <strong id="ledReadout">48颗</strong>
+          </div>
+          <div>
+            <span>速度</span>
+            <strong id="speedReadout">1.00x</strong>
+          </div>
+          <div>
+            <span>亮度</span>
+            <strong id="intensityReadout">82%</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-bay" aria-label="氛围灯控制台">
+        <div class="tabs" role="tablist" aria-label="控制分类">
+          <button class="tab is-active" type="button" data-tab="motion">动效</button>
+          <button class="tab" type="button" data-tab="shape">形状</button>
+          <button class="tab" type="button" data-tab="music">律动</button>
+          <button class="tab" type="button" data-tab="project">机型</button>
+        </div>
+
+        <div class="panel is-active" id="motionPanel" data-panel="motion">
+          <div class="section-heading">
+            <span>Motion Library</span>
+            <output id="motionCount">0 effects</output>
+          </div>
+          <div class="effect-grid" id="effectGrid"></div>
+
+          <div class="custom-builder">
+            <div class="section-heading compact-heading">
+              <span>Custom Effect</span>
+              <output id="customEffectStatus">未应用</output>
+            </div>
+            <div class="builder-grid">
+              <label>
+                <span>样式</span>
+                <select id="customPattern">
+                  <option value="solid">整段常亮</option>
+                  <option value="dash">短段移动</option>
+                  <option value="segments">分段闪烁</option>
+                  <option value="pulse">脉冲闪烁</option>
+                </select>
+              </label>
+              <label>
+                <span>节奏</span>
+                <input id="customTempo" type="range" min="0.4" max="2.4" step="0.1" value="1" />
+              </label>
+              <label>
+                <span>光段比例</span>
+                <input id="customSpan" type="range" min="8" max="100" step="1" value="34" />
+              </label>
+              <label>
+                <span>闪烁强度</span>
+                <input id="customPulse" type="range" min="10" max="100" step="1" value="58" />
+              </label>
+            </div>
+            <button class="full-button" type="button" id="applyCustomEffect">应用自定义灯效</button>
+          </div>
+        </div>
+
+        <div class="panel" id="shapePanel" data-panel="shape">
+          <div class="section-heading">
+            <span>Shape Studio</span>
+            <output id="pointCount">0 points</output>
+          </div>
+
+          <div class="shape-presets" id="shapePresets"></div>
+
+          <div class="import-card">
+            <label class="file-trigger">
+              <span>上传 PNG 识别形状</span>
+              <input id="pngShapeInput" type="file" accept="image/png" />
+            </label>
+            <output id="pngStatus">建议使用透明背景或高对比轮廓图</output>
+          </div>
+
+          <div class="draw-mode-switch" id="drawModeSwitch" aria-label="绘制方式">
+            <button class="is-active" type="button" data-draw-mode="free">自由画</button>
+            <button type="button" data-draw-mode="point">断点画</button>
+          </div>
+
+          <div class="draw-board-wrap">
+            <canvas id="drawBoard" width="360" height="260" aria-label="手绘氛围灯形状"></canvas>
+            <div class="draw-actions">
+              <button type="button" id="clearDraw">清空</button>
+              <button type="button" id="undoPoint">撤销点</button>
+              <button type="button" id="applyDraw">应用手绘形状</button>
+              <button type="button" id="applyPointDraw">应用断点形状</button>
+            </div>
+          </div>
+
+          <label class="path-field">
+            <span>SVG Path</span>
+            <textarea id="pathInput" rows="4" spellcheck="false"></textarea>
+          </label>
+          <button class="full-button" type="button" id="applyPath">应用路径</button>
+        </div>
+
+        <div class="panel" id="musicPanel" data-panel="music">
+          <div class="section-heading">
+            <span>Rhythm Modes</span>
+            <output id="musicCount">0 patterns</output>
+          </div>
+          <div class="import-card">
+            <label class="file-trigger">
+              <span>上传音乐并分析律动</span>
+              <input id="audioInput" type="file" accept="audio/*" />
+            </label>
+            <audio id="audioPlayer" controls></audio>
+            <output id="audioStatus">上传后播放音乐，灯效会跟随音量和频谱律动</output>
+          </div>
+          <div class="effect-grid compact" id="musicGrid"></div>
+          <div class="equalizer" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="export-actions">
+            <button type="button" id="recordAnimation">下载动画</button>
+            <button type="button" id="downloadSnapshot">下载当前样式</button>
+          </div>
+        </div>
+
+        <div class="panel" id="projectPanel" data-panel="project">
+          <div class="section-heading">
+            <span>Model Records</span>
+            <output id="recordCount">0 records</output>
+          </div>
+          <div class="project-form">
+            <label>
+              <span>机型名称</span>
+              <input id="modelNameInput" type="text" placeholder="例如：X Phone Pro" />
+            </label>
+            <label>
+              <span>系列/标签</span>
+              <input id="modelTagInput" type="text" placeholder="例如：旗舰 / 折叠 / 入门" />
+            </label>
+            <label>
+              <span>筛选机型</span>
+              <input id="modelFilterInput" type="search" placeholder="输入机型或标签" />
+            </label>
+          </div>
+          <div class="selected-summary" id="selectedSummary">
+            当前将保存：常亮环 / 圆形 / 4组 x 12颗
+          </div>
+          <button class="full-button" type="button" id="saveModelRecord">保存选中灯效到机型</button>
+          <div class="record-list" id="recordList"></div>
+        </div>
+
+        <div class="fine-controls" aria-label="细节参数">
+          <div class="control-row">
+            <label for="colorPicker">光色</label>
+            <div class="color-control">
+              <input id="colorPicker" type="color" value="#33e6c5" />
+              <button type="button" id="rainbowToggle">彩色</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <label for="speedSlider">速度</label>
+            <input id="speedSlider" type="range" min="0.35" max="2.4" step="0.05" value="1" />
+          </div>
+          <div class="control-row">
+            <label for="intensitySlider">亮度</label>
+            <input id="intensitySlider" type="range" min="35" max="100" step="1" value="82" />
+          </div>
+          <div class="control-row">
+            <label for="groupCountInput">灯组</label>
+            <input id="groupCountInput" type="number" min="1" max="16" step="1" value="4" />
+          </div>
+          <div class="control-row">
+            <label for="lightsPerGroupInput">单组灯数</label>
+            <input id="lightsPerGroupInput" type="number" min="1" max="80" step="1" value="12" />
+          </div>
+          <div class="scenario-strip" id="scenarioStrip" aria-label="场景预设"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

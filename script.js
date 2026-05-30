@@ -1,0 +1,1089 @@
+const shapes = [
+  {
+    id: "circle",
+    name: "圆形",
+    path: "M150 42 C209.6 42 258 90.4 258 150 C258 209.6 209.6 258 150 258 C90.4 258 42 209.6 42 150 C42 90.4 90.4 42 150 42 Z",
+  },
+  {
+    id: "capsule",
+    name: "跑道环",
+    path: "M86 68 H214 C248 68 270 101 270 150 C270 199 248 232 214 232 H86 C52 232 30 199 30 150 C30 101 52 68 86 68 Z",
+  },
+  {
+    id: "rounded-square",
+    name: "圆角方环",
+    path: "M90 46 H210 C236 46 254 64 254 90 V210 C254 236 236 254 210 254 H90 C64 254 46 236 46 210 V90 C46 64 64 46 90 46 Z",
+  },
+  {
+    id: "camera-island",
+    name: "相机岛",
+    path: "M72 62 H196 C236 62 264 92 264 132 V168 C264 208 236 238 196 238 H104 C64 238 36 208 36 168 V122 C36 87 45 62 72 62 Z",
+  },
+  {
+    id: "lens-eight",
+    name: "双镜环",
+    path: "M101 65 C137 65 166 94 166 130 C166 166 137 195 101 195 C65 195 36 166 36 130 C36 94 65 65 101 65 Z M199 105 C235 105 264 134 264 170 C264 206 235 235 199 235 C163 235 134 206 134 170 C134 134 163 105 199 105 Z",
+  },
+  {
+    id: "notch",
+    name: "缺口环",
+    path: "M150 38 C212 38 262 88 262 150 C262 212 212 262 150 262 C88 262 38 212 38 150 C38 108 61 71 95 52 M128 40 C135 39 142 38 150 38",
+  },
+  {
+    id: "wave",
+    name: "波浪闭环",
+    path: "M52 151 C64 88 108 54 153 69 C187 80 208 73 229 59 C260 98 267 161 236 209 C205 257 137 267 88 235 C57 214 39 182 52 151 Z",
+  },
+  {
+    id: "shield",
+    name: "盾形环",
+    path: "M150 38 C186 60 226 59 256 62 V141 C256 201 216 240 150 264 C84 240 44 201 44 141 V62 C74 59 114 60 150 38 Z",
+  },
+];
+
+const effects = [
+  { id: "steady", name: "常亮环", desc: "整条灯带稳定发光，用于开启状态" },
+  { id: "breathe", name: "呼吸灯", desc: "柔和明暗起伏，用于轻提醒" },
+  { id: "progress", name: "进度填充", desc: "沿路径逐步填满，用于充电或倒计时" },
+  { id: "loader", name: "加载巡航", desc: "短光段沿路径循环移动" },
+  { id: "chase", name: "双段追逐", desc: "两段灯光首尾追随" },
+  { id: "segment", name: "分段跳变", desc: "路径被切成短段，节奏式点亮" },
+  { id: "gather", name: "双向汇聚", desc: "两束光从相对方向向中心聚合" },
+  { id: "pulse", name: "强提醒脉冲", desc: "两次短促高亮，适合告警" },
+  { id: "flow", name: "流光滑行", desc: "较长光带沿形状平稳滑动" },
+  { id: "ripple", name: "涟漪扩散", desc: "多段亮光像波纹一样前进" },
+  { id: "scan", name: "扫描扫光", desc: "一段光束往返扫过路径" },
+  { id: "orbit-dot", name: "单点绕行", desc: "一个亮点沿形状完整跑一圈" },
+  { id: "meteor", name: "流星拖尾", desc: "亮点带短尾沿路径飞行" },
+  { id: "spark", name: "星点闪烁", desc: "短点随机感跳动，适合消息" },
+  { id: "warning", name: "分区告警", desc: "高对比断续闪烁，用于重要提醒" },
+  { id: "battery", name: "电量波", desc: "低到高逐步铺满，再保持" },
+];
+
+const musicEffects = [
+  { id: "music-ref-breathe", name: "参考呼吸", desc: "整圈彩色渐变慢慢亮灭" },
+  { id: "music-ref-pulse", name: "参考脉冲", desc: "整圈青色按节拍闪亮" },
+  { id: "music-ref-pulse-rhythm", name: "脉冲律动", desc: "整圈彩色随节拍脉冲" },
+  { id: "music-ref-flow", name: "流光律动", desc: "彩色光段沿环形滑动" },
+  { id: "music-ref-ripple", name: "涟漪律动", desc: "局部蓝色波纹扩散" },
+];
+
+const scenarios = [
+  { id: "charge", name: "充电", shape: "capsule", effect: "battery", color: "#6ef08d", speed: 0.75, intensity: 78 },
+  { id: "call", name: "来电", shape: "camera-island", effect: "gather", color: "#d9b35f", speed: 1.15, intensity: 88 },
+  { id: "message", name: "消息", shape: "notch", effect: "spark", color: "#58b8ff", speed: 1.35, intensity: 82 },
+  { id: "alert", name: "提醒", shape: "shield", effect: "warning", color: "#ff5a55", speed: 1.65, intensity: 96 },
+  { id: "music", name: "音乐", shape: "wave", effect: "music-ref-flow", color: "#33e6c5", speed: 1.1, intensity: 90 },
+];
+
+const root = document.documentElement;
+const phone = document.querySelector(".phone-metal");
+const previewPaths = [
+  document.querySelector("#previewTrack"),
+  document.querySelector("#previewGlow"),
+  document.querySelector("#previewLight"),
+  document.querySelector("#previewLightAlt"),
+];
+const lightPath = document.querySelector("#previewLight");
+const lightAltPath = document.querySelector("#previewLightAlt");
+const ledLayer = document.querySelector("#ledLayer");
+const rainbowFlowLayer = document.querySelector("#rainbowFlowLayer");
+const motionLayer = document.querySelector("#motionLayer");
+const sparkLayer = document.querySelector("#sparkLayer");
+const effectGrid = document.querySelector("#effectGrid");
+const musicGrid = document.querySelector("#musicGrid");
+const shapePresets = document.querySelector("#shapePresets");
+const scenarioStrip = document.querySelector("#scenarioStrip");
+const modeName = document.querySelector("#modeName");
+const modeDesc = document.querySelector("#modeDesc");
+const shapeReadout = document.querySelector("#shapeReadout");
+const groupReadout = document.querySelector("#groupReadout");
+const ledReadout = document.querySelector("#ledReadout");
+const speedReadout = document.querySelector("#speedReadout");
+const intensityReadout = document.querySelector("#intensityReadout");
+const statusChip = document.querySelector("#statusChip");
+const motionCount = document.querySelector("#motionCount");
+const musicCount = document.querySelector("#musicCount");
+const customEffectStatus = document.querySelector("#customEffectStatus");
+const pointCount = document.querySelector("#pointCount");
+const colorPicker = document.querySelector("#colorPicker");
+const rainbowToggle = document.querySelector("#rainbowToggle");
+const speedSlider = document.querySelector("#speedSlider");
+const intensitySlider = document.querySelector("#intensitySlider");
+const groupCountInput = document.querySelector("#groupCountInput");
+const lightsPerGroupInput = document.querySelector("#lightsPerGroupInput");
+const pathInput = document.querySelector("#pathInput");
+const applyPath = document.querySelector("#applyPath");
+const drawBoard = document.querySelector("#drawBoard");
+const drawModeSwitch = document.querySelector("#drawModeSwitch");
+const pngShapeInput = document.querySelector("#pngShapeInput");
+const pngStatus = document.querySelector("#pngStatus");
+const clearDraw = document.querySelector("#clearDraw");
+const undoPoint = document.querySelector("#undoPoint");
+const applyDraw = document.querySelector("#applyDraw");
+const applyPointDraw = document.querySelector("#applyPointDraw");
+const customPattern = document.querySelector("#customPattern");
+const customTempo = document.querySelector("#customTempo");
+const customSpan = document.querySelector("#customSpan");
+const customPulse = document.querySelector("#customPulse");
+const applyCustomEffect = document.querySelector("#applyCustomEffect");
+const audioInput = document.querySelector("#audioInput");
+const audioPlayer = document.querySelector("#audioPlayer");
+const audioStatus = document.querySelector("#audioStatus");
+const recordAnimation = document.querySelector("#recordAnimation");
+const downloadSnapshot = document.querySelector("#downloadSnapshot");
+const modelNameInput = document.querySelector("#modelNameInput");
+const modelTagInput = document.querySelector("#modelTagInput");
+const modelFilterInput = document.querySelector("#modelFilterInput");
+const selectedSummary = document.querySelector("#selectedSummary");
+const saveModelRecord = document.querySelector("#saveModelRecord");
+const recordList = document.querySelector("#recordList");
+const recordCount = document.querySelector("#recordCount");
+const tabs = document.querySelectorAll(".tab");
+const panels = document.querySelectorAll(".panel");
+const drawContext = drawBoard.getContext("2d");
+
+let currentShape = shapes[0];
+let currentEffect = effects[0];
+let drawPoints = [];
+let pointDrawPoints = [];
+let isDrawing = false;
+let drawMode = "free";
+let isRainbow = false;
+let ledConfig = {
+  groups: 4,
+  perGroup: 12,
+};
+let modelRecords = [];
+let audioContext;
+let analyser;
+let frequencyData;
+let audioSource;
+let audioFrameId;
+let recorder;
+let recordedChunks = [];
+
+function hexToRgb(hex) {
+  const clean = hex.replace("#", "");
+  const value = parseInt(clean, 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
+}
+
+function setColor(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  root.style.setProperty("--light", hex);
+  root.style.setProperty("--light-rgb", `${r} ${g} ${b}`);
+  colorPicker.value = hex;
+  updateSelectedSummary();
+}
+
+function setRainbow(enabled) {
+  isRainbow = enabled;
+  phone.classList.toggle("is-rainbow", isRainbow);
+  rainbowToggle.classList.toggle("is-active", isRainbow);
+  rainbowToggle.textContent = isRainbow ? "彩色开" : "彩色";
+  buildRainbowFlow(lightPath.getAttribute("d"));
+  updateSelectedSummary();
+}
+
+function setSpeed(value) {
+  const speed = Number(value);
+  root.style.setProperty("--speed", speed.toFixed(2));
+  speedSlider.value = speed.toFixed(2);
+  speedReadout.textContent = `${speed.toFixed(2)}x`;
+  updateMotionDurations(speed);
+  updateSelectedSummary();
+}
+
+function updateMotionDurations(speed) {
+  document.querySelectorAll(".orbit-motion").forEach((item) => {
+    item.setAttribute("dur", `${(2.1 / speed).toFixed(2)}s`);
+  });
+  document.querySelectorAll(".meteor-motion").forEach((item) => {
+    item.setAttribute("dur", `${(1.65 / speed).toFixed(2)}s`);
+  });
+}
+
+function setIntensity(value) {
+  const intensity = Number(value);
+  root.style.setProperty("--intensity", (intensity / 100).toFixed(2));
+  intensitySlider.value = intensity;
+  intensityReadout.textContent = `${intensity}%`;
+  updateSelectedSummary();
+}
+
+function clampNumber(value, min, max) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
+    return min;
+  }
+
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function setLedConfig(groups, perGroup) {
+  ledConfig = {
+    groups: clampNumber(groups, 1, 16),
+    perGroup: clampNumber(perGroup, 1, 80),
+  };
+  groupCountInput.value = ledConfig.groups;
+  lightsPerGroupInput.value = ledConfig.perGroup;
+  groupReadout.textContent = `${ledConfig.groups}组`;
+  ledReadout.textContent = `${ledConfig.groups * ledConfig.perGroup}颗`;
+  renderLedLayout();
+  updateSelectedSummary();
+}
+
+function setPath(path, shapeName = "自定义") {
+  previewPaths.forEach((item) => item.setAttribute("d", path));
+  pathInput.value = path;
+  shapeReadout.textContent = shapeName;
+  updateSelectedSummary();
+
+  requestAnimationFrame(() => {
+    const length = lightPath.getTotalLength();
+    root.style.setProperty("--path-length", length.toFixed(2));
+    setPathMetrics(length);
+    buildRainbowFlow(path, length);
+    buildMotionLayer(path);
+    [lightPath, lightAltPath].forEach((pathItem) => {
+      pathItem.style.strokeDasharray = "";
+      pathItem.style.strokeDashoffset = "";
+    });
+    renderLedLayout(length);
+    updateSparks(length);
+  });
+}
+
+function setPathMetrics(length) {
+  const metrics = {
+    "--offset-full": -length,
+    "--offset-half": -length * 0.5,
+    "--dash-loader-on": length * 0.16,
+    "--dash-loader-off": length * 0.84,
+    "--dash-chase-on": length * 0.12,
+    "--dash-chase-off": length * 0.88,
+    "--dash-segment-on": length * 0.08,
+    "--dash-segment-off": length * 0.045,
+    "--dash-flow-on": length * 0.34,
+    "--dash-flow-off": length * 0.66,
+    "--dash-ripple-on": length * 0.09,
+    "--dash-ripple-off": length * 0.16,
+    "--dash-scan-on": length * 0.22,
+    "--dash-scan-off": length * 0.78,
+    "--dash-battery-start": length * 0.12,
+    "--dash-battery-mid": length * 0.62,
+    "--offset-small": -length * 0.08,
+    "--offset-scan-start": length * 0.1,
+    "--offset-scan-end": -length,
+    "--offset-ref-ripple-start": -length * 0.38,
+    "--offset-ref-ripple-alt-start": -length * 0.5,
+    "--offset-ref-ripple-alt-end": -length * 1.12,
+  };
+
+  Object.entries(metrics).forEach(([name, value]) => {
+    root.style.setProperty(name, value.toFixed(2));
+  });
+}
+
+function buildRainbowFlow(path) {
+  rainbowFlowLayer.innerHTML = "";
+
+  if (!path) {
+    return;
+  }
+
+  const item = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  item.setAttribute("d", path);
+  item.setAttribute("stroke", "url(#rainbowStroke)");
+  rainbowFlowLayer.append(item);
+}
+
+function buildMotionLayer(path) {
+  motionLayer.innerHTML = "";
+
+  if (!path) {
+    return;
+  }
+
+  const motionPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  motionPath.setAttribute("id", "orbitMotionPath");
+  motionPath.setAttribute("d", path);
+  motionPath.setAttribute("fill", "none");
+  motionPath.setAttribute("stroke", "none");
+  motionLayer.append(motionPath);
+
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.setAttribute("class", "orbit-dot");
+  dot.setAttribute("r", "5.2");
+  dot.innerHTML = '<animateMotion class="orbit-motion" dur="2.1s" repeatCount="indefinite" rotate="auto"><mpath href="#orbitMotionPath"></mpath></animateMotion>';
+  motionLayer.append(dot);
+
+  const meteor = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  meteor.setAttribute("class", "meteor-head");
+  meteor.innerHTML = `
+    <circle r="5.4"></circle>
+    <circle class="meteor-core" r="2.4"></circle>
+    <animateMotion class="meteor-motion" dur="1.65s" repeatCount="indefinite" rotate="auto"><mpath href="#orbitMotionPath"></mpath></animateMotion>
+  `;
+  motionLayer.append(meteor);
+  updateMotionDurations(Number(speedSlider.value));
+}
+
+function renderLedLayout(existingLength) {
+  ledLayer.innerHTML = "";
+
+  if (!lightPath.getAttribute("d")) {
+    return;
+  }
+
+  const length = existingLength ?? lightPath.getTotalLength();
+  const totalLights = ledConfig.groups * ledConfig.perGroup;
+  const groupPalette = ["#33e6c5", "#d9b35f", "#ff6d7a", "#61a8ff", "#9ee66d", "#f0f3d6"];
+
+  for (let index = 0; index < totalLights; index += 1) {
+    const distance = totalLights === 1 ? 0 : (length * index) / totalLights;
+    const point = lightPath.getPointAtLength(distance);
+    const groupIndex = Math.floor(index / ledConfig.perGroup);
+    const led = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const isStart = index % ledConfig.perGroup === 0;
+    led.setAttribute("cx", point.x.toFixed(2));
+    led.setAttribute("cy", point.y.toFixed(2));
+    led.setAttribute("r", isStart ? "3.4" : "2.35");
+    led.setAttribute("fill", groupPalette[groupIndex % groupPalette.length]);
+    led.classList.toggle("is-start", isStart);
+    ledLayer.append(led);
+  }
+}
+
+function setShape(shapeId) {
+  const shape = shapes.find((item) => item.id === shapeId) ?? shapes[0];
+  currentShape = shape;
+  setPath(shape.path, shape.name);
+
+  document.querySelectorAll(".shape-button").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.shape === shape.id);
+  });
+}
+
+function setEffect(effectId) {
+  const customEffect = currentEffect?.id === effectId && effectId.startsWith("custom-") ? currentEffect : null;
+  const effect = customEffect ?? [...effects, ...musicEffects].find((item) => item.id === effectId) ?? effects[0];
+  currentEffect = effect;
+  phone.className = `phone-metal mode-${effect.id}`;
+  phone.classList.toggle("is-rainbow", isRainbow);
+  modeName.textContent = effect.name;
+  modeDesc.textContent = effect.desc;
+  statusChip.textContent = effectId.startsWith("music") ? "BEAT" : "LIVE";
+
+  document.querySelectorAll(".effect-card").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.effect === effect.id);
+  });
+  updateSelectedSummary();
+}
+
+function updateSelectedSummary() {
+  if (!selectedSummary || !saveModelRecord) {
+    return;
+  }
+
+  const modelName = modelNameInput.value.trim();
+  const target = modelName || "未命名机型";
+  selectedSummary.textContent = `当前将保存：${target} / ${currentEffect.name} / ${currentShape.name} / ${ledConfig.groups}组 x ${ledConfig.perGroup}颗 / ${isRainbow ? "彩色流动" : colorPicker.value}`;
+  saveModelRecord.textContent = modelName ? `保存「${modelName}」的选中灯效` : "输入机型后保存选中灯效";
+}
+
+function applyGeneratedEffect() {
+  const pattern = customPattern.value;
+  const span = Number(customSpan.value) / 100;
+  const tempo = Number(customTempo.value);
+  const pulseLow = Math.max(0.08, 1 - Number(customPulse.value) / 100);
+  const names = {
+    solid: "自定义常亮",
+    dash: "自定义追光",
+    segments: "自定义分段",
+    pulse: "自定义脉冲",
+  };
+  const descriptions = {
+    solid: "按自定义节奏轻微呼吸的整段光",
+    dash: "按自定义光段比例沿路径移动",
+    segments: "按自定义间距切分的分段闪烁",
+    pulse: "按自定义强度闪烁的脉冲光",
+  };
+
+  root.style.setProperty("--custom-span", span.toFixed(2));
+  root.style.setProperty("--custom-gap", Math.max(0.02, 1 - span).toFixed(2));
+  root.style.setProperty("--custom-tempo", tempo.toFixed(2));
+  root.style.setProperty("--custom-low", pulseLow.toFixed(2));
+  currentEffect = {
+    id: `custom-${pattern}`,
+    name: names[pattern],
+    desc: descriptions[pattern],
+  };
+  setEffect(currentEffect.id);
+  customEffectStatus.textContent = `${names[pattern]} / ${tempo.toFixed(1)}x`;
+}
+
+function updateSparks(length) {
+  sparkLayer.innerHTML = "";
+
+  if (!length) {
+    return;
+  }
+
+  const count = currentEffect.id.includes("music") ? 5 : 3;
+
+  for (let index = 0; index < count; index += 1) {
+    const point = lightPath.getPointAtLength((length / count) * index);
+    const spark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    spark.setAttribute("cx", point.x.toFixed(2));
+    spark.setAttribute("cy", point.y.toFixed(2));
+    spark.setAttribute("r", currentEffect.id === "spark" ? "3.4" : "2.8");
+    spark.style.animation = `sparkDrift calc(${1.2 + index * 0.15}s / var(--speed)) ease-in-out infinite`;
+    spark.style.animationDelay = `${index * 0.16}s`;
+    sparkLayer.append(spark);
+  }
+}
+
+function renderEffects() {
+  motionCount.textContent = `${effects.length} effects`;
+  musicCount.textContent = `${musicEffects.length} patterns`;
+
+  effects.forEach((effect) => {
+    effectGrid.append(createEffectButton(effect));
+  });
+
+  musicEffects.forEach((effect) => {
+    musicGrid.append(createEffectButton(effect));
+  });
+}
+
+function createEffectButton(effect) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "effect-card";
+  button.dataset.effect = effect.id;
+  button.innerHTML = `<strong>${effect.name}</strong><small>${effect.desc}</small>`;
+  button.addEventListener("click", () => setEffect(effect.id));
+  return button;
+}
+
+function renderShapes() {
+  shapes.forEach((shape) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "shape-button";
+    button.dataset.shape = shape.id;
+    button.textContent = shape.name;
+    button.addEventListener("click", () => setShape(shape.id));
+    shapePresets.append(button);
+  });
+}
+
+function renderScenarios() {
+  scenarios.forEach((scenario) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.scenario = scenario.id;
+    button.textContent = scenario.name;
+    button.addEventListener("click", () => {
+      setShape(scenario.shape);
+      setEffect(scenario.effect);
+      setColor(scenario.color);
+      setRainbow(false);
+      setSpeed(scenario.speed);
+      setIntensity(scenario.intensity);
+      document.querySelectorAll(".scenario-strip button").forEach((item) => {
+        item.classList.toggle("is-active", item === button);
+      });
+    });
+    scenarioStrip.append(button);
+  });
+}
+
+function getCurrentState() {
+  return {
+    shape: currentShape,
+    effect: currentEffect,
+    color: colorPicker.value,
+    rainbow: isRainbow,
+    speed: speedSlider.value,
+    intensity: intensitySlider.value,
+    ledConfig,
+    custom: {
+      pattern: customPattern.value,
+      tempo: customTempo.value,
+      span: customSpan.value,
+      pulse: customPulse.value,
+    },
+  };
+}
+
+function restoreState(state) {
+  if (!state) {
+    return;
+  }
+
+  currentShape = state.shape ?? shapes[0];
+  setPath(currentShape.path, currentShape.name);
+  setColor(state.color ?? "#33e6c5");
+  setRainbow(Boolean(state.rainbow));
+  setSpeed(state.speed ?? 1);
+  setIntensity(state.intensity ?? 82);
+  setLedConfig(state.ledConfig?.groups ?? 4, state.ledConfig?.perGroup ?? 12);
+
+  if (state.custom) {
+    customPattern.value = state.custom.pattern ?? "solid";
+    customTempo.value = state.custom.tempo ?? "1";
+    customSpan.value = state.custom.span ?? "34";
+    customPulse.value = state.custom.pulse ?? "58";
+  }
+
+  currentEffect = state.effect ?? effects[0];
+  setEffect(currentEffect.id);
+}
+
+function saveRecords() {
+  localStorage.setItem("ambientLightModelRecords", JSON.stringify(modelRecords));
+}
+
+function loadRecords() {
+  try {
+    modelRecords = JSON.parse(localStorage.getItem("ambientLightModelRecords") ?? "[]");
+  } catch {
+    modelRecords = [];
+  }
+}
+
+function renderRecords() {
+  const keyword = modelFilterInput.value.trim().toLowerCase();
+  const filtered = modelRecords.filter((record) => {
+    const text = `${record.name} ${record.tag}`.toLowerCase();
+    return !keyword || text.includes(keyword);
+  });
+  recordCount.textContent = `${filtered.length} records`;
+  recordList.innerHTML = "";
+
+  if (!filtered.length) {
+    recordList.innerHTML = '<div class="record-card"><span>暂无匹配机型记录</span></div>';
+    return;
+  }
+
+  filtered.forEach((record) => {
+    const card = document.createElement("div");
+    card.className = "record-card";
+    card.innerHTML = `
+      <strong>${record.name}</strong>
+      <span>${record.tag || "未设置标签"} / ${record.state.shape.name} / ${record.state.effect.name} / ${record.state.ledConfig.groups}组 x ${record.state.ledConfig.perGroup}颗</span>
+      <div class="record-actions">
+        <button type="button" data-action="load">载入</button>
+        <button type="button" data-action="delete">删除</button>
+      </div>
+    `;
+    card.querySelector('[data-action="load"]').addEventListener("click", () => {
+      modelNameInput.value = record.name;
+      modelTagInput.value = record.tag;
+      restoreState(record.state);
+      updateSelectedSummary();
+    });
+    card.querySelector('[data-action="delete"]').addEventListener("click", () => {
+      modelRecords = modelRecords.filter((item) => item.id !== record.id);
+      saveRecords();
+      renderRecords();
+    });
+    recordList.append(card);
+  });
+}
+
+function saveCurrentModelRecord() {
+  const name = modelNameInput.value.trim();
+
+  if (!name) {
+    selectedSummary.textContent = "请先输入机型名称，再保存当前选中的灯效";
+    modelNameInput.focus();
+    return;
+  }
+
+  const tag = modelTagInput.value.trim();
+  modelRecords.unshift({
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    name,
+    tag,
+    createdAt: new Date().toISOString(),
+    state: getCurrentState(),
+  });
+  saveRecords();
+  renderRecords();
+}
+
+function setupAudioFile(file) {
+  if (!file) {
+    return;
+  }
+
+  audioPlayer.src = URL.createObjectURL(file);
+  audioStatus.textContent = `已载入：${file.name}，播放后开始律动`;
+  setEffect("music-ref-flow");
+}
+
+function startAudioAnalysis() {
+  if (!audioPlayer.src) {
+    return;
+  }
+
+  audioContext ??= new AudioContext();
+  analyser ??= audioContext.createAnalyser();
+  analyser.fftSize = 256;
+  frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+  if (!audioSource) {
+    audioSource = audioContext.createMediaElementSource(audioPlayer);
+    audioSource.connect(analyser);
+    analyser.connect(audioContext.destination);
+  }
+
+  audioContext.resume();
+  cancelAnimationFrame(audioFrameId);
+  analyzeAudioFrame();
+}
+
+function analyzeAudioFrame() {
+  if (!analyser || audioPlayer.paused) {
+    return;
+  }
+
+  analyser.getByteFrequencyData(frequencyData);
+  const average = frequencyData.reduce((total, value) => total + value, 0) / frequencyData.length;
+  const bass = frequencyData.slice(0, 12).reduce((total, value) => total + value, 0) / 12;
+  const energy = Math.min(1, average / 150);
+  const bassEnergy = Math.min(1, bass / 180);
+  setIntensity(Math.round(48 + energy * 52));
+  setSpeed((0.75 + bassEnergy * 1.55).toFixed(2));
+  root.style.setProperty("--custom-tempo", (0.9 + energy * 1.6).toFixed(2));
+  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% / 低频 ${Math.round(bassEnergy * 100)}%`;
+  audioFrameId = requestAnimationFrame(analyzeAudioFrame);
+}
+
+function downloadBlob(blob, filename) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function downloadAnimatedSvgFallback() {
+  const path = currentShape.path;
+  const color = isRainbow ? "#ffd45f" : colorPicker.value;
+  const length = Math.round(lightPath.getTotalLength() || 900);
+  const rainbowPath = `
+  <defs>
+    <linearGradient id="exportRainbow" x1="22%" y1="12%" x2="82%" y2="88%">
+      <stop offset="0%" stop-color="#39f5ce"/>
+      <stop offset="24%" stop-color="#7cf26d"/>
+      <stop offset="48%" stop-color="#ffd45f"/>
+      <stop offset="72%" stop-color="#ff6d7a"/>
+      <stop offset="100%" stop-color="#61a8ff"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 0.5 0.5" to="360 0.5 0.5" dur="18s" repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+  <path d="${path}" fill="none" stroke="url(#exportRainbow)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const singlePath = `
+  <path d="${path}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"
+    stroke-dasharray="${Math.round(length * 0.28)} ${Math.round(length * 0.72)}" stroke-dashoffset="0">
+    <animate attributeName="stroke-dashoffset" from="0" to="-${length}" dur="${Math.max(0.45, 2 / Number(speedSlider.value)).toFixed(2)}s" repeatCount="indefinite"/>
+  </path>`;
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#101210"/>
+  <path d="${path}" fill="none" stroke="rgba(239,232,210,0.18)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  ${isRainbow ? rainbowPath : singlePath}
+</svg>`;
+  downloadBlob(new Blob([svg], { type: "image/svg+xml" }), "ambient-light-effect.svg");
+}
+
+async function recordPreviewAnimation() {
+  const stream = document.querySelector(".device-bay").captureStream?.(30);
+
+  if (!stream || typeof MediaRecorder === "undefined") {
+    downloadAnimatedSvgFallback();
+    audioStatus.textContent = "当前浏览器不支持录制预览，已下载 SVG 动画";
+    return;
+  }
+
+  recordedChunks = [];
+  recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+  recorder.addEventListener("dataavailable", (event) => {
+    if (event.data.size) {
+      recordedChunks.push(event.data);
+    }
+  });
+  recorder.addEventListener("stop", () => {
+    downloadBlob(new Blob(recordedChunks, { type: "video/webm" }), "ambient-light-effect.webm");
+    recordAnimation.textContent = "下载动画";
+  });
+  recorder.start();
+  recordAnimation.textContent = "录制中 5s";
+  setTimeout(() => recorder?.state === "recording" && recorder.stop(), 5000);
+}
+
+function downloadSnapshotFile() {
+  const snapshot = {
+    exportedAt: new Date().toISOString(),
+    state: getCurrentState(),
+  };
+  downloadBlob(new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" }), "ambient-light-style.json");
+}
+
+function setupTabs() {
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
+      panels.forEach((panel) => {
+        panel.classList.toggle("is-active", panel.dataset.panel === tab.dataset.tab);
+      });
+    });
+  });
+}
+
+function drawGuide() {
+  drawContext.clearRect(0, 0, drawBoard.width, drawBoard.height);
+  drawContext.lineWidth = 1;
+  drawContext.strokeStyle = "rgba(239, 232, 210, 0.15)";
+
+  for (let x = 24; x < drawBoard.width; x += 24) {
+    drawContext.beginPath();
+    drawContext.moveTo(x, 0);
+    drawContext.lineTo(x, drawBoard.height);
+    drawContext.stroke();
+  }
+
+  for (let y = 24; y < drawBoard.height; y += 24) {
+    drawContext.beginPath();
+    drawContext.moveTo(0, y);
+    drawContext.lineTo(drawBoard.width, y);
+    drawContext.stroke();
+  }
+
+  drawLine(drawPoints, colorPicker.value, 4);
+  drawLine(pointDrawPoints, "#d9b35f", 3);
+
+  pointDrawPoints.forEach((point, index) => {
+    drawContext.beginPath();
+    drawContext.fillStyle = index === 0 ? "#33e6c5" : "#d9b35f";
+    drawContext.shadowColor = drawContext.fillStyle;
+    drawContext.shadowBlur = 8;
+    drawContext.arc(point.x, point.y, 4.2, 0, Math.PI * 2);
+    drawContext.fill();
+    drawContext.shadowBlur = 0;
+  });
+}
+
+function drawLine(points, color, width) {
+  if (points.length < 2) {
+    return;
+  }
+
+  drawContext.lineWidth = width;
+  drawContext.lineCap = "round";
+  drawContext.lineJoin = "round";
+  drawContext.strokeStyle = color;
+  drawContext.shadowColor = color;
+  drawContext.shadowBlur = 10;
+  drawContext.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) {
+      drawContext.moveTo(point.x, point.y);
+    } else {
+      drawContext.lineTo(point.x, point.y);
+    }
+  });
+  drawContext.stroke();
+  drawContext.shadowBlur = 0;
+}
+
+function getBoardPoint(event) {
+  const rect = drawBoard.getBoundingClientRect();
+  const scaleX = drawBoard.width / rect.width;
+  const scaleY = drawBoard.height / rect.height;
+  return {
+    x: (event.clientX - rect.left) * scaleX,
+    y: (event.clientY - rect.top) * scaleY,
+  };
+}
+
+function simplifyPoints(points, step = 6) {
+  return points.filter((_, index) => index % step === 0).slice(0, 64);
+}
+
+function pointsToPath(points, { closed = true } = {}) {
+  const simplified = points.length > 12 ? simplifyPoints(points) : points;
+
+  if (simplified.length < (closed ? 4 : 2)) {
+    return "";
+  }
+
+  const scaleX = 300 / drawBoard.width;
+  const scaleY = 300 / drawBoard.height;
+  const normalized = simplified.map((point) => ({
+    x: Math.max(26, Math.min(274, point.x * scaleX)),
+    y: Math.max(26, Math.min(274, point.y * scaleY)),
+  }));
+
+  const [first, ...rest] = normalized;
+  const lines = rest.map((point) => `L${point.x.toFixed(1)} ${point.y.toFixed(1)}`);
+  return `M${first.x.toFixed(1)} ${first.y.toFixed(1)} ${lines.join(" ")}${closed ? " Z" : ""}`;
+}
+
+function applyCustomPath(points, name, options) {
+  const path = pointsToPath(points, options);
+
+  if (!path) {
+    pointCount.textContent = "点太少";
+    return;
+  }
+
+  currentShape = { id: "custom", name, path };
+  setPath(path, currentShape.name);
+  document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
+}
+
+function imageDataToPath(imageData, width, height) {
+  const points = [];
+  const data = imageData.data;
+  const step = Math.max(2, Math.floor(Math.min(width, height) / 72));
+
+  for (let y = step; y < height - step; y += step) {
+    for (let x = step; x < width - step; x += step) {
+      const index = (y * width + x) * 4;
+      const alpha = data[index + 3];
+      const brightness = (data[index] + data[index + 1] + data[index + 2]) / 3;
+      const current = alpha > 40 && brightness > 24;
+
+      if (!current) {
+        continue;
+      }
+
+      const neighbors = [
+        ((y - step) * width + x) * 4,
+        ((y + step) * width + x) * 4,
+        (y * width + x - step) * 4,
+        (y * width + x + step) * 4,
+      ];
+      const isEdge = neighbors.some((neighborIndex) => data[neighborIndex + 3] <= 40);
+
+      if (isEdge) {
+        points.push({ x, y });
+      }
+    }
+  }
+
+  if (points.length < 8) {
+    return "";
+  }
+
+  const center = points.reduce(
+    (total, point) => ({ x: total.x + point.x / points.length, y: total.y + point.y / points.length }),
+    { x: 0, y: 0 },
+  );
+  const sorted = points
+    .sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x))
+    .filter((_, index) => index % Math.max(1, Math.floor(points.length / 90)) === 0)
+    .slice(0, 120);
+  const normalized = sorted.map((point) => ({
+    x: 34 + (point.x / width) * 232,
+    y: 34 + (point.y / height) * 232,
+  }));
+  const [first, ...rest] = normalized;
+  const lines = rest.map((point) => `L${point.x.toFixed(1)} ${point.y.toFixed(1)}`);
+  return `M${first.x.toFixed(1)} ${first.y.toFixed(1)} ${lines.join(" ")} Z`;
+}
+
+function importPngShape(file) {
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    const image = new Image();
+    image.addEventListener("load", () => {
+      const canvas = document.createElement("canvas");
+      const size = 280;
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, size, size);
+      const scale = Math.min(size / image.width, size / image.height);
+      const drawWidth = image.width * scale;
+      const drawHeight = image.height * scale;
+      context.drawImage(image, (size - drawWidth) / 2, (size - drawHeight) / 2, drawWidth, drawHeight);
+      const path = imageDataToPath(context.getImageData(0, 0, size, size), size, size);
+
+      if (!path) {
+        pngStatus.textContent = "未识别到清晰轮廓，请换透明背景或高对比 PNG";
+        return;
+      }
+
+      currentShape = { id: "png-shape", name: "PNG识别形状", path };
+      setPath(path, currentShape.name);
+      pngStatus.textContent = `已识别：${file.name}`;
+      document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
+    });
+    image.src = reader.result;
+  });
+  reader.readAsDataURL(file);
+}
+
+function setupDrawing() {
+  drawGuide();
+
+  drawModeSwitch.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-draw-mode]");
+
+    if (!button) {
+      return;
+    }
+
+    drawMode = button.dataset.drawMode;
+    drawModeSwitch.querySelectorAll("button").forEach((item) => {
+      item.classList.toggle("is-active", item === button);
+    });
+    pointCount.textContent = drawMode === "point" ? `${pointDrawPoints.length} breakpoints` : `${drawPoints.length} points`;
+  });
+
+  drawBoard.addEventListener("pointerdown", (event) => {
+    if (drawMode === "point") {
+      pointDrawPoints.push(getBoardPoint(event));
+      pointCount.textContent = `${pointDrawPoints.length} breakpoints`;
+      drawGuide();
+      return;
+    }
+
+    drawBoard.setPointerCapture(event.pointerId);
+    isDrawing = true;
+    drawPoints = [getBoardPoint(event)];
+    pointCount.textContent = "1 point";
+    drawGuide();
+  });
+
+  drawBoard.addEventListener("pointermove", (event) => {
+    if (!isDrawing || drawMode === "point") {
+      return;
+    }
+
+    drawPoints.push(getBoardPoint(event));
+    pointCount.textContent = `${drawPoints.length} points`;
+    drawGuide();
+  });
+
+  drawBoard.addEventListener("pointerup", () => {
+    isDrawing = false;
+  });
+
+  drawBoard.addEventListener("dblclick", () => {
+    if (drawMode === "point") {
+      applyCustomPath(pointDrawPoints, "断点形状", { closed: false });
+    }
+  });
+
+  drawBoard.addEventListener("pointercancel", () => {
+    isDrawing = false;
+  });
+
+  clearDraw.addEventListener("click", () => {
+    drawPoints = [];
+    pointDrawPoints = [];
+    pointCount.textContent = drawMode === "point" ? "0 breakpoints" : "0 points";
+    drawGuide();
+  });
+
+  undoPoint.addEventListener("click", () => {
+    if (drawMode === "point") {
+      pointDrawPoints.pop();
+      pointCount.textContent = `${pointDrawPoints.length} breakpoints`;
+    } else {
+      drawPoints.pop();
+      pointCount.textContent = `${drawPoints.length} points`;
+    }
+    drawGuide();
+  });
+
+  applyDraw.addEventListener("click", () => {
+    applyCustomPath(drawPoints, "手绘形状");
+  });
+
+  applyPointDraw.addEventListener("click", () => {
+    applyCustomPath(pointDrawPoints, "断点形状", { closed: false });
+  });
+}
+
+function setupControls() {
+  colorPicker.addEventListener("input", (event) => {
+    setColor(event.target.value);
+    setRainbow(false);
+    drawGuide();
+  });
+  rainbowToggle.addEventListener("click", () => setRainbow(!isRainbow));
+  speedSlider.addEventListener("input", (event) => setSpeed(event.target.value));
+  intensitySlider.addEventListener("input", (event) => setIntensity(event.target.value));
+  groupCountInput.addEventListener("input", () => {
+    setLedConfig(groupCountInput.value, lightsPerGroupInput.value);
+  });
+  lightsPerGroupInput.addEventListener("input", () => {
+    setLedConfig(groupCountInput.value, lightsPerGroupInput.value);
+  });
+  pngShapeInput.addEventListener("change", (event) => {
+    importPngShape(event.target.files[0]);
+  });
+  applyCustomEffect.addEventListener("click", applyGeneratedEffect);
+  audioInput.addEventListener("change", (event) => {
+    setupAudioFile(event.target.files[0]);
+  });
+  audioPlayer.addEventListener("play", startAudioAnalysis);
+  audioPlayer.addEventListener("pause", () => {
+    cancelAnimationFrame(audioFrameId);
+    audioStatus.textContent = "已暂停音乐律动";
+  });
+  recordAnimation.addEventListener("click", recordPreviewAnimation);
+  downloadSnapshot.addEventListener("click", downloadSnapshotFile);
+  saveModelRecord.addEventListener("click", saveCurrentModelRecord);
+  modelNameInput.addEventListener("input", updateSelectedSummary);
+  modelTagInput.addEventListener("input", updateSelectedSummary);
+  modelFilterInput.addEventListener("input", renderRecords);
+  applyPath.addEventListener("click", () => {
+    const path = pathInput.value.trim();
+
+    if (!path) {
+      return;
+    }
+
+    currentShape = { id: "custom-path", name: "路径形状", path };
+    setPath(path, currentShape.name);
+    document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
+  });
+}
+
+function boot() {
+  loadRecords();
+  renderEffects();
+  renderShapes();
+  renderScenarios();
+  renderRecords();
+  setupTabs();
+  setupDrawing();
+  setupControls();
+  setColor(colorPicker.value);
+  setSpeed(speedSlider.value);
+  setIntensity(intensitySlider.value);
+  setLedConfig(groupCountInput.value, lightsPerGroupInput.value);
+  setShape(currentShape.id);
+  setEffect(currentEffect.id);
+}
+
+boot();
