@@ -24,8 +24,17 @@
 
     <script>
       (function() {
-        if (sessionStorage.getItem('site_auth') === '2026') {
+        const auth = localStorage.getItem('site_auth');
+        const authTime = localStorage.getItem('site_auth_time');
+        const now = new Date().getTime();
+        const threeDays = 3 * 24 * 60 * 60 * 1000; // 3天（毫秒）
+
+        if (auth === '2026' && authTime && (now - parseInt(authTime, 10) < threeDays)) {
           document.getElementById('passwordGate').style.display = 'none';
+        } else {
+          // 过期或未登录，清除历史记录以防万一
+          localStorage.removeItem('site_auth');
+          localStorage.removeItem('site_auth_time');
         }
       })();
 
@@ -35,7 +44,10 @@
         const gate = document.getElementById('passwordGate');
         
         if (input === '2026') {
-          sessionStorage.setItem('site_auth', '2026');
+          const now = new Date().getTime();
+          localStorage.setItem('site_auth', '2026');
+          localStorage.setItem('site_auth_time', now.toString());
+          
           gate.classList.add('unlock');
           setTimeout(() => {
             gate.style.display = 'none';
