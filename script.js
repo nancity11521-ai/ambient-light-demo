@@ -120,6 +120,7 @@ const pngShapeInput = document.querySelector("#pngShapeInput");
 const pngStatus = document.querySelector("#pngStatus");
 const shapeRecordList = document.querySelector("#shapeRecordList");
 const shapeRecordCount = document.querySelector("#shapeRecordCount");
+const shapeFolderFilter = document.querySelector("#shapeFolderFilter");
 const clearDraw = document.querySelector("#clearDraw");
 const undoPoint = document.querySelector("#undoPoint");
 const applyDraw = document.querySelector("#applyDraw");
@@ -547,7 +548,10 @@ function saveUploadedShapeRecords() {
 
 function loadUploadedShapeRecords() {
   try {
-    uploadedShapeRecords = JSON.parse(localStorage.getItem("ambientLightUploadedShapes") ?? "[]");
+    uploadedShapeRecords = JSON.parse(localStorage.getItem("ambientLightUploadedShapes") ?? "[]").map((record) => ({
+      ...record,
+      folder: record.folder || "默认",
+    }));
   } catch {
     uploadedShapeRecords = [];
   }
@@ -565,36 +569,85 @@ function applyUploadedShapeRecord(record) {
 }
 
 function renderUploadedShapeRecords() {
-  shapeRecordCount.textContent = `${uploadedShapeRecords.length} records`;
+  const folders = [...new Set(uploadedShapeRecords.map((record) => record.folder || "默认"))].sort((a, b) => a.localeCompare(b, "zh-CN"));
+  const selectedFolder = folders.includes(shapeFolderFilter.value) ? shapeFolderFilter.value : "";
+  const filteredRecords = selectedFolder
+    ? uploadedShapeRecords.filter((record) => (record.folder || "默认") === selectedFolder)
+    : uploadedShapeRecords;
+
+  shapeFolderFilter.innerHTML = '<option value="">全部文件夹</option>';
+  folders.forEach((folder) => {
+    const option = document.createElement("option");
+    option.value = folder;
+    option.textContent = folder;
+    option.selected = folder === selectedFolder;
+    shapeFolderFilter.append(option);
+  });
+
+  shapeRecordCount.textContent = selectedFolder ? `${filteredRecords.length}/${uploadedShapeRecords.length} records` : `${uploadedShapeRecords.length} records`;
   shapeRecordList.innerHTML = "";
 
-  if (!uploadedShapeRecords.length) {
+  if (!filteredRecords.length) {
     shapeRecordList.innerHTML = '<div class="record-card"><span>暂无上传形状记录</span></div>';
     return;
   }
 
-  uploadedShapeRecords.forEach((record) => {
+  filteredRecords.forEach((record) => {
     const card = document.createElement("div");
     const title = document.createElement("strong");
     const detail = document.createElement("span");
+    const editGrid = document.createElement("div");
+    const nameLabel = document.createElement("label");
+    const nameText = document.createElement("span");
+    const nameInput = document.createElement("input");
+    const folderLabel = document.createElement("label");
+    const folderText = document.createElement("span");
+    const folderInput = document.createElement("input");
     const actions = document.createElement("div");
+    const saveButton = document.createElement("button");
     const loadButton = document.createElement("button");
     const deleteButton = document.createElement("button");
 
     card.className = "record-card";
+    editGrid.className = "record-edit-grid";
     actions.className = "record-actions";
     title.textContent = record.name;
-    detail.textContent = new Date(record.createdAt).toLocaleString("zh-CN", {
+    detail.textContent = `${record.folder || "默认"} / ${new Date(record.createdAt).toLocaleString("zh-CN", {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
-    });
+    })}`;
+    nameText.textContent = "名称";
+    folderText.textContent = "文件夹";
+    nameInput.type = "text";
+    nameInput.value = record.name;
+    nameInput.placeholder = "形状名称";
+    folderInput.type = "text";
+    folderInput.value = record.folder || "默认";
+    folderInput.placeholder = "例如：三角形 / 客户A";
+    saveButton.type = "button";
+    saveButton.textContent = "保存";
     loadButton.type = "button";
     loadButton.textContent = "载入";
     deleteButton.type = "button";
     deleteButton.textContent = "删除";
 
+    saveButton.addEventListener("click", () => {
+      const nextName = nameInput.value.trim();
+      const nextFolder = folderInput.value.trim() || "默认";
+
+      if (!nextName) {
+        nameInput.focus();
+        return;
+      }
+
+      record.name = nextName;
+      record.folder = nextFolder;
+      saveUploadedShapeRecords();
+      renderUploadedShapeRecords();
+      pngStatus.textContent = `已更新记录：${record.name}`;
+    });
     loadButton.addEventListener("click", () => applyUploadedShapeRecord(record));
     deleteButton.addEventListener("click", () => {
       uploadedShapeRecords = uploadedShapeRecords.filter((item) => item.id !== record.id);
@@ -602,8 +655,11 @@ function renderUploadedShapeRecords() {
       renderUploadedShapeRecords();
     });
 
-    actions.append(loadButton, deleteButton);
-    card.append(title, detail, actions);
+    nameLabel.append(nameText, nameInput);
+    folderLabel.append(folderText, folderInput);
+    editGrid.append(nameLabel, folderLabel);
+    actions.append(saveButton, loadButton, deleteButton);
+    card.append(title, detail, editGrid, actions);
     shapeRecordList.append(card);
   });
 }
@@ -612,6 +668,7 @@ function saveUploadedShapeRecord(name, path) {
   const record = {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
     name,
+    folder: "默认",
     path,
     createdAt: new Date().toISOString(),
   };
@@ -1273,6 +1330,7 @@ function setupControls() {
   pngShapeInput.addEventListener("change", (event) => {
     importPngShape(event.target.files[0]);
   });
+  shapeFolderFilter.addEventListener("change", renderUploadedShapeRecords);
   applyCustomEffect.addEventListener("click", applyGeneratedEffect);
   audioInput.addEventListener("change", (event) => {
     setupAudioFile(event.target.files[0]);

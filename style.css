@@ -750,6 +750,39 @@ h1 {
   background: transparent;
 }
 
+.shape-folder-filter {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.shape-folder-filter span,
+.record-edit-grid span {
+  color: var(--muted);
+  font-family: "DIN Alternate", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shape-folder-filter select,
+.record-edit-grid input {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.22);
+  outline: none;
+}
+
+.shape-folder-filter select:focus,
+.record-edit-grid input:focus {
+  border-color: rgb(var(--light-rgb) / 0.5);
+}
+
 .selected-summary {
   margin-top: 12px;
   padding: 12px;
@@ -787,9 +820,20 @@ h1 {
   line-height: 1.45;
 }
 
-.record-actions {
+.record-edit-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.record-edit-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.record-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
@@ -1676,6 +1720,7 @@ h1 {
   .draw-actions,
   .color-control,
   .builder-grid,
+  .record-edit-grid,
   .project-form,
   .export-actions {
     grid-template-columns: 1fr;
