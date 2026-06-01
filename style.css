@@ -632,6 +632,7 @@ h1 {
 
 .custom-builder,
 .import-card,
+.shape-history,
 .project-form,
 .record-list {
   margin-top: 16px;
@@ -740,6 +741,13 @@ h1 {
   gap: 10px;
   max-height: 360px;
   overflow: auto;
+}
+
+.compact-list {
+  max-height: 220px;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .selected-summary {

@@ -118,6 +118,8 @@ const drawBoard = document.querySelector("#drawBoard");
 const drawModeSwitch = document.querySelector("#drawModeSwitch");
 const pngShapeInput = document.querySelector("#pngShapeInput");
 const pngStatus = document.querySelector("#pngStatus");
+const shapeRecordList = document.querySelector("#shapeRecordList");
+const shapeRecordCount = document.querySelector("#shapeRecordCount");
 const clearDraw = document.querySelector("#clearDraw");
 const undoPoint = document.querySelector("#undoPoint");
 const applyDraw = document.querySelector("#applyDraw");
@@ -155,6 +157,7 @@ let ledConfig = {
   perGroup: 12,
 };
 let modelRecords = [];
+let uploadedShapeRecords = [];
 let audioContext;
 let analyser;
 let frequencyData;
@@ -536,6 +539,86 @@ function loadRecords() {
   } catch {
     modelRecords = [];
   }
+}
+
+function saveUploadedShapeRecords() {
+  localStorage.setItem("ambientLightUploadedShapes", JSON.stringify(uploadedShapeRecords.slice(0, 24)));
+}
+
+function loadUploadedShapeRecords() {
+  try {
+    uploadedShapeRecords = JSON.parse(localStorage.getItem("ambientLightUploadedShapes") ?? "[]");
+  } catch {
+    uploadedShapeRecords = [];
+  }
+}
+
+function applyUploadedShapeRecord(record) {
+  currentShape = {
+    id: record.id,
+    name: record.name,
+    path: record.path,
+  };
+  setPath(currentShape.path, currentShape.name);
+  pngStatus.textContent = `已载入记录：${record.name}`;
+  document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
+}
+
+function renderUploadedShapeRecords() {
+  shapeRecordCount.textContent = `${uploadedShapeRecords.length} records`;
+  shapeRecordList.innerHTML = "";
+
+  if (!uploadedShapeRecords.length) {
+    shapeRecordList.innerHTML = '<div class="record-card"><span>暂无上传形状记录</span></div>';
+    return;
+  }
+
+  uploadedShapeRecords.forEach((record) => {
+    const card = document.createElement("div");
+    const title = document.createElement("strong");
+    const detail = document.createElement("span");
+    const actions = document.createElement("div");
+    const loadButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
+
+    card.className = "record-card";
+    actions.className = "record-actions";
+    title.textContent = record.name;
+    detail.textContent = new Date(record.createdAt).toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    loadButton.type = "button";
+    loadButton.textContent = "载入";
+    deleteButton.type = "button";
+    deleteButton.textContent = "删除";
+
+    loadButton.addEventListener("click", () => applyUploadedShapeRecord(record));
+    deleteButton.addEventListener("click", () => {
+      uploadedShapeRecords = uploadedShapeRecords.filter((item) => item.id !== record.id);
+      saveUploadedShapeRecords();
+      renderUploadedShapeRecords();
+    });
+
+    actions.append(loadButton, deleteButton);
+    card.append(title, detail, actions);
+    shapeRecordList.append(card);
+  });
+}
+
+function saveUploadedShapeRecord(name, path) {
+  const record = {
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    name,
+    path,
+    createdAt: new Date().toISOString(),
+  };
+
+  uploadedShapeRecords = [record, ...uploadedShapeRecords.filter((item) => item.path !== path)].slice(0, 24);
+  saveUploadedShapeRecords();
+  renderUploadedShapeRecords();
 }
 
 function renderRecords() {
@@ -1081,6 +1164,7 @@ function importPngShape(file) {
       currentShape = { id: "png-shape", name: "PNG识别形状", path };
       setPath(path, currentShape.name);
       pngStatus.textContent = `已识别：${file.name}`;
+      saveUploadedShapeRecord(file.name, path);
       document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
     });
     image.src = reader.result;
@@ -1219,10 +1303,12 @@ function setupControls() {
 
 function boot() {
   loadRecords();
+  loadUploadedShapeRecords();
   renderEffects();
   renderShapes();
   renderScenarios();
   renderRecords();
+  renderUploadedShapeRecords();
   setupTabs();
   setupDrawing();
   setupControls();
