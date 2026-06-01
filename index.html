@@ -389,8 +389,15 @@
               <span>上传音乐并分析律动</span>
               <input id="audioInput" type="file" accept="audio/*" />
             </label>
+            <div class="online-audio-field">
+              <label>
+                <span>在线音乐 URL</span>
+                <input id="audioUrlInput" type="url" placeholder="https://example.com/music.mp3" />
+              </label>
+              <button type="button" id="loadAudioUrl">识别在线音乐</button>
+            </div>
             <audio id="audioPlayer" controls></audio>
-            <output id="audioStatus">上传后播放音乐，灯效会跟随音量和频谱律动</output>
+            <output id="audioStatus">上传本地音乐，或输入可直接访问的 mp3 / wav / ogg 地址后播放</output>
           </div>
           <div class="effect-grid compact" id="musicGrid"></div>
           <div class="equalizer" aria-hidden="true">

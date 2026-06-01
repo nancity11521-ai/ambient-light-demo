@@ -678,8 +678,17 @@ h1 {
   gap: 10px;
 }
 
+.online-audio-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 8px;
+  align-items: end;
+  margin-top: 12px;
+}
+
 .builder-grid label,
 .project-form label,
+.online-audio-field label,
 .file-trigger {
   display: grid;
   gap: 8px;
@@ -687,6 +696,7 @@ h1 {
 
 .builder-grid span,
 .project-form span,
+.online-audio-field span,
 .file-trigger span {
   color: var(--muted);
   font-family: "DIN Alternate", "Avenir Next Condensed", "Arial Narrow", sans-serif;
@@ -698,7 +708,8 @@ h1 {
 
 .builder-grid input,
 .builder-grid select,
-.project-form input {
+.project-form input,
+.online-audio-field input {
   width: 100%;
   min-height: 36px;
   border: 1px solid var(--line);
@@ -707,6 +718,17 @@ h1 {
   color: var(--text);
   background: rgba(0, 0, 0, 0.22);
   outline: none;
+}
+
+.online-audio-field button {
+  min-height: 36px;
+  border: 1px solid rgb(var(--light-rgb) / 0.42);
+  border-radius: 8px;
+  color: rgb(var(--light-rgb));
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-family: "DIN Alternate", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-weight: 700;
 }
 
 .builder-grid input[type="range"] {
@@ -1880,6 +1902,7 @@ h1 {
   .builder-grid,
   .record-edit-grid,
   .shape-folder-editor,
+  .online-audio-field,
   .project-form,
   .export-actions {
     grid-template-columns: 1fr;

@@ -128,6 +128,8 @@ const customSpan = document.querySelector("#customSpan");
 const customPulse = document.querySelector("#customPulse");
 const applyCustomEffect = document.querySelector("#applyCustomEffect");
 const audioInput = document.querySelector("#audioInput");
+const audioUrlInput = document.querySelector("#audioUrlInput");
+const loadAudioUrl = document.querySelector("#loadAudioUrl");
 const audioPlayer = document.querySelector("#audioPlayer");
 const audioStatus = document.querySelector("#audioStatus");
 const recordAnimation = document.querySelector("#recordAnimation");
@@ -633,8 +635,41 @@ function setupAudioFile(file) {
     return;
   }
 
+  audioPlayer.crossOrigin = "";
   audioPlayer.src = URL.createObjectURL(file);
   audioStatus.textContent = `已载入：${file.name}，播放后开始律动`;
+  setEffect("music-ref-flow");
+}
+
+function setupAudioUrl(rawUrl) {
+  const value = rawUrl.trim();
+
+  if (!value) {
+    audioStatus.textContent = "请输入在线音乐地址";
+    audioUrlInput.focus();
+    return;
+  }
+
+  let url;
+
+  try {
+    url = new URL(value);
+  } catch {
+    audioStatus.textContent = "音乐地址格式不正确，请输入完整的音频链接";
+    audioUrlInput.focus();
+    return;
+  }
+
+  if (!["http:", "https:", "data:"].includes(url.protocol)) {
+    audioStatus.textContent = "仅支持 http、https 或 data 音频地址";
+    return;
+  }
+
+  audioPlayer.pause();
+  audioPlayer.crossOrigin = url.protocol === "data:" ? "" : "anonymous";
+  audioPlayer.src = url.href;
+  audioPlayer.load();
+  audioStatus.textContent = "在线音乐已载入，播放后开始律动；若无频谱变化，请确认音频地址允许跨域读取";
   setEffect("music-ref-flow");
 }
 
@@ -643,20 +678,24 @@ function startAudioAnalysis() {
     return;
   }
 
-  audioContext ??= new AudioContext();
-  analyser ??= audioContext.createAnalyser();
-  analyser.fftSize = 256;
-  frequencyData = new Uint8Array(analyser.frequencyBinCount);
+  try {
+    audioContext ??= new AudioContext();
+    analyser ??= audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    frequencyData = new Uint8Array(analyser.frequencyBinCount);
 
-  if (!audioSource) {
-    audioSource = audioContext.createMediaElementSource(audioPlayer);
-    audioSource.connect(analyser);
-    analyser.connect(audioContext.destination);
+    if (!audioSource) {
+      audioSource = audioContext.createMediaElementSource(audioPlayer);
+      audioSource.connect(analyser);
+      analyser.connect(audioContext.destination);
+    }
+
+    audioContext.resume();
+    cancelAnimationFrame(audioFrameId);
+    analyzeAudioFrame();
+  } catch {
+    audioStatus.textContent = "当前音乐无法读取频谱，请换用允许跨域访问的音频直链";
   }
-
-  audioContext.resume();
-  cancelAnimationFrame(audioFrameId);
-  analyzeAudioFrame();
 }
 
 function analyzeAudioFrame() {
@@ -1222,6 +1261,15 @@ function setupControls() {
   applyCustomEffect.addEventListener("click", applyGeneratedEffect);
   audioInput.addEventListener("change", (event) => {
     setupAudioFile(event.target.files[0]);
+  });
+  loadAudioUrl.addEventListener("click", () => setupAudioUrl(audioUrlInput.value));
+  audioUrlInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      setupAudioUrl(audioUrlInput.value);
+    }
+  });
+  audioPlayer.addEventListener("error", () => {
+    audioStatus.textContent = "音乐加载失败，请检查地址是否为可直接播放的音频链接";
   });
   audioPlayer.addEventListener("play", startAudioAnalysis);
   audioPlayer.addEventListener("pause", () => {
