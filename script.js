@@ -121,6 +121,8 @@ const pngStatus = document.querySelector("#pngStatus");
 const shapeRecordList = document.querySelector("#shapeRecordList");
 const shapeRecordCount = document.querySelector("#shapeRecordCount");
 const shapeFolderFilter = document.querySelector("#shapeFolderFilter");
+const shapeFolderNameInput = document.querySelector("#shapeFolderNameInput");
+const renameShapeFolder = document.querySelector("#renameShapeFolder");
 const clearDraw = document.querySelector("#clearDraw");
 const undoPoint = document.querySelector("#undoPoint");
 const applyDraw = document.querySelector("#applyDraw");
@@ -583,6 +585,10 @@ function renderUploadedShapeRecords() {
     option.selected = folder === selectedFolder;
     shapeFolderFilter.append(option);
   });
+  shapeFolderFilter.value = selectedFolder;
+  shapeFolderNameInput.value = selectedFolder;
+  shapeFolderNameInput.disabled = !selectedFolder;
+  renameShapeFolder.disabled = !selectedFolder;
 
   shapeRecordCount.textContent = selectedFolder ? `${filteredRecords.length}/${uploadedShapeRecords.length} records` : `${uploadedShapeRecords.length} records`;
   shapeRecordList.innerHTML = "";
@@ -618,8 +624,8 @@ function renderUploadedShapeRecords() {
       hour: "2-digit",
       minute: "2-digit",
     })}`;
-    nameText.textContent = "名称";
-    folderText.textContent = "文件夹";
+    nameText.textContent = "图片名称";
+    folderText.textContent = "所属文件夹";
     nameInput.type = "text";
     nameInput.value = record.name;
     nameInput.placeholder = "形状名称";
@@ -662,6 +668,28 @@ function renderUploadedShapeRecords() {
     card.append(title, detail, editGrid, actions);
     shapeRecordList.append(card);
   });
+}
+
+function renameSelectedShapeFolder() {
+  const currentFolder = shapeFolderFilter.value;
+  const nextFolder = shapeFolderNameInput.value.trim() || "默认";
+
+  if (!currentFolder || currentFolder === nextFolder) {
+    return;
+  }
+
+  uploadedShapeRecords = uploadedShapeRecords.map((record) =>
+    (record.folder || "默认") === currentFolder
+      ? {
+          ...record,
+          folder: nextFolder,
+        }
+      : record,
+  );
+  shapeFolderFilter.value = nextFolder;
+  saveUploadedShapeRecords();
+  renderUploadedShapeRecords();
+  pngStatus.textContent = `已重命名文件夹：${nextFolder}`;
 }
 
 function saveUploadedShapeRecord(name, path) {
@@ -1331,6 +1359,7 @@ function setupControls() {
     importPngShape(event.target.files[0]);
   });
   shapeFolderFilter.addEventListener("change", renderUploadedShapeRecords);
+  renameShapeFolder.addEventListener("click", renameSelectedShapeFolder);
   applyCustomEffect.addEventListener("click", applyGeneratedEffect);
   audioInput.addEventListener("change", (event) => {
     setupAudioFile(event.target.files[0]);

@@ -60,6 +60,12 @@ body {
   background-size: 52px 52px, 52px 52px, auto, auto;
 }
 
+@media (min-width: 981px) {
+  body {
+    overflow: hidden;
+  }
+}
+
 button,
 input,
 textarea {
@@ -72,12 +78,12 @@ button {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(380px, 0.95fr) minmax(420px, 1.05fr);
-  gap: clamp(16px, 2.4vw, 32px);
-  width: min(1320px, calc(100% - 28px));
-  min-height: 100vh;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(520px, 1.18fr);
+  gap: clamp(12px, 1.7vw, 22px);
+  width: min(1440px, calc(100% - 24px));
+  height: 100vh;
   margin: 0 auto;
-  padding: clamp(14px, 2.2vw, 30px) 0;
+  padding: clamp(10px, 1.5vw, 18px) 0;
   align-items: stretch;
 }
 
@@ -93,11 +99,12 @@ button {
 
 .device-bay {
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-height: calc(100vh - 60px);
-  padding: clamp(18px, 3vw, 32px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  height: 100%;
+  padding: clamp(14px, 2vw, 22px);
   position: sticky;
-  top: 18px;
+  top: 10px;
 }
 
 .bay-topline {
@@ -127,7 +134,7 @@ button {
 }
 
 .kicker {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
@@ -138,7 +145,7 @@ button {
 h1 {
   max-width: 13em;
   margin: 0;
-  font-size: clamp(24px, 3.3vw, 46px);
+  font-size: clamp(22px, 2.65vw, 36px);
   font-weight: 700;
   line-height: 1.05;
 }
@@ -158,13 +165,13 @@ h1 {
 .phone-frame {
   display: grid;
   place-items: center;
-  min-height: 560px;
-  padding: 26px 0;
+  min-height: 0;
+  padding: 10px 0;
 }
 
 .phone-metal {
   position: relative;
-  width: min(68vw, 340px);
+  width: min(52vw, 280px);
   aspect-ratio: 0.54;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 34px;
@@ -318,9 +325,9 @@ h1 {
 
 .mode-readout {
   position: absolute;
-  right: 26px;
-  bottom: 74px;
-  left: 26px;
+  right: 22px;
+  bottom: 62px;
+  left: 22px;
   display: grid;
   gap: 5px;
   padding-top: 16px;
@@ -328,7 +335,7 @@ h1 {
 }
 
 .mode-readout span {
-  font-size: 24px;
+  font-size: 21px;
   font-weight: 700;
 }
 
@@ -339,9 +346,9 @@ h1 {
 
 .hardware-lines {
   position: absolute;
-  right: 26px;
-  bottom: 34px;
-  left: 26px;
+  right: 22px;
+  bottom: 28px;
+  left: 22px;
   display: grid;
   grid-template-columns: 1fr 0.55fr 1fr;
   gap: 10px;
@@ -355,12 +362,12 @@ h1 {
 .metric-bar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .metric-bar div {
   min-width: 0;
-  padding: 12px;
+  padding: 9px 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.025);
@@ -381,14 +388,15 @@ h1 {
 }
 
 .metric-bar strong {
-  margin-top: 5px;
-  font-size: 17px;
+  margin-top: 4px;
+  font-size: 15px;
 }
 
 .control-bay {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  min-height: calc(100vh - 60px);
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -399,7 +407,7 @@ h1 {
 }
 
 .tab {
-  min-height: 50px;
+  min-height: 44px;
   border: 0;
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.018);
@@ -423,7 +431,7 @@ h1 {
 .panel {
   display: none;
   min-height: 0;
-  padding: clamp(16px, 2.6vw, 26px);
+  padding: clamp(12px, 1.8vw, 18px);
   overflow: auto;
 }
 
@@ -436,7 +444,7 @@ h1 {
   justify-content: space-between;
   gap: 14px;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
@@ -455,7 +463,7 @@ h1 {
 .effect-grid,
 .shape-presets {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .effect-grid {
@@ -477,8 +485,8 @@ h1 {
 }
 
 .effect-card {
-  min-height: 96px;
-  padding: 12px;
+  min-height: 74px;
+  padding: 10px;
 }
 
 .effect-card:hover,
@@ -502,12 +510,12 @@ h1 {
 }
 
 .effect-card strong {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .effect-card small {
-  margin-top: 7px;
+  margin-top: 5px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
@@ -756,7 +764,21 @@ h1 {
   margin-bottom: 12px;
 }
 
+.shape-folder-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.shape-folder-editor label {
+  display: grid;
+  gap: 8px;
+}
+
 .shape-folder-filter span,
+.shape-folder-editor span,
 .record-edit-grid span {
   color: var(--muted);
   font-family: "DIN Alternate", "Avenir Next Condensed", "Arial Narrow", sans-serif;
@@ -767,6 +789,7 @@ h1 {
 }
 
 .shape-folder-filter select,
+.shape-folder-editor input,
 .record-edit-grid input {
   width: 100%;
   min-height: 34px;
@@ -779,8 +802,26 @@ h1 {
 }
 
 .shape-folder-filter select:focus,
+.shape-folder-editor input:focus,
 .record-edit-grid input:focus {
   border-color: rgb(var(--light-rgb) / 0.5);
+}
+
+.shape-folder-editor button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-family: "DIN Alternate", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-weight: 700;
+}
+
+.shape-folder-editor button:disabled,
+.shape-folder-editor input:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .selected-summary {
@@ -797,8 +838,8 @@ h1 {
 
 .record-card {
   display: grid;
-  gap: 9px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.18);
@@ -811,7 +852,7 @@ h1 {
 }
 
 .record-card strong {
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .record-card span {
@@ -838,7 +879,7 @@ h1 {
 }
 
 .record-actions button {
-  min-height: 34px;
+  min-height: 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
@@ -894,10 +935,20 @@ h1 {
 
 .fine-controls {
   display: grid;
-  gap: 14px;
-  padding: clamp(16px, 2.6vw, 24px);
+  gap: 10px;
+  padding: clamp(12px, 1.8vw, 16px);
   border-top: 1px solid var(--line);
   background: rgba(0, 0, 0, 0.16);
+}
+
+@media (min-width: 981px) {
+  .fine-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fine-controls .scenario-strip {
+    grid-column: 1 / -1;
+  }
 }
 
 .control-row {
@@ -1677,6 +1728,8 @@ h1 {
 @media (max-width: 980px) {
   .workspace {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
   }
 
   .metric-bar {
@@ -1721,6 +1774,7 @@ h1 {
   .color-control,
   .builder-grid,
   .record-edit-grid,
+  .shape-folder-editor,
   .project-form,
   .export-actions {
     grid-template-columns: 1fr;
