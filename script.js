@@ -833,13 +833,34 @@ function applyCustomPath(points, name, options) {
 
 function imageDataToPath(imageData, width, height) {
   const data = imageData.data;
-  const step = Math.max(2, Math.floor(Math.min(width, height) / 72));
-  const sampleSize = Math.max(2, Math.floor(Math.min(width, height) / 18));
+  const step = Math.max(1, Math.floor(Math.min(width, height) / 140));
+  let alphaBounds = { minX: width, minY: height, maxX: 0, maxY: 0 };
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (data[(y * width + x) * 4 + 3] <= 40) {
+        continue;
+      }
+
+      alphaBounds = {
+        minX: Math.min(alphaBounds.minX, x),
+        minY: Math.min(alphaBounds.minY, y),
+        maxX: Math.max(alphaBounds.maxX, x),
+        maxY: Math.max(alphaBounds.maxY, y),
+      };
+    }
+  }
+
+  if (alphaBounds.minX > alphaBounds.maxX || alphaBounds.minY > alphaBounds.maxY) {
+    return "";
+  }
+
+  const sampleSize = Math.max(2, Math.floor(Math.min(alphaBounds.maxX - alphaBounds.minX, alphaBounds.maxY - alphaBounds.minY) / 18));
   const cornerSamples = [
-    { x: sampleSize, y: sampleSize },
-    { x: width - sampleSize, y: sampleSize },
-    { x: sampleSize, y: height - sampleSize },
-    { x: width - sampleSize, y: height - sampleSize },
+    { x: alphaBounds.minX + sampleSize, y: alphaBounds.minY + sampleSize },
+    { x: alphaBounds.maxX - sampleSize, y: alphaBounds.minY + sampleSize },
+    { x: alphaBounds.minX + sampleSize, y: alphaBounds.maxY - sampleSize },
+    { x: alphaBounds.maxX - sampleSize, y: alphaBounds.maxY - sampleSize },
   ];
   const background = cornerSamples.reduce(
     (total, sample) => {
@@ -853,12 +874,24 @@ function imageDataToPath(imageData, width, height) {
     },
     { r: 0, g: 0, b: 0, a: 0 },
   );
-  const transparentPixels = Array.from({ length: Math.floor(data.length / 4) }, (_, index) => data[index * 4 + 3]).filter(
-    (alpha) => alpha < 80,
-  ).length;
-  const usesTransparency = transparentPixels > width * height * 0.08;
+  let transparentPixels = 0;
+  const alphaArea = Math.max(1, (alphaBounds.maxX - alphaBounds.minX + 1) * (alphaBounds.maxY - alphaBounds.minY + 1));
+
+  for (let y = alphaBounds.minY; y <= alphaBounds.maxY; y += 1) {
+    for (let x = alphaBounds.minX; x <= alphaBounds.maxX; x += 1) {
+      if (data[(y * width + x) * 4 + 3] < 80) {
+        transparentPixels += 1;
+      }
+    }
+  }
+
+  const usesTransparency = alphaArea < width * height * 0.55 || transparentPixels > alphaArea * 0.08;
 
   function isForeground(x, y) {
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+      return false;
+    }
+
     const index = (y * width + x) * 4;
     const alpha = data[index + 3];
 
@@ -873,12 +906,22 @@ function imageDataToPath(imageData, width, height) {
   }
 
   const points = [];
+  let bounds = { minX: width, minY: height, maxX: 0, maxY: 0 };
+  let foregroundCount = 0;
 
   for (let y = step; y < height - step; y += step) {
     for (let x = step; x < width - step; x += step) {
       if (!isForeground(x, y)) {
         continue;
       }
+
+      foregroundCount += 1;
+      bounds = {
+        minX: Math.min(bounds.minX, x),
+        minY: Math.min(bounds.minY, y),
+        maxX: Math.max(bounds.maxX, x),
+        maxY: Math.max(bounds.maxY, y),
+      };
 
       const neighbors = [
         { x, y: y - step },
@@ -898,18 +941,112 @@ function imageDataToPath(imageData, width, height) {
     return "";
   }
 
+  function cross(origin, a, b) {
+    return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
+  }
+
+  function convexHull(items) {
+    const sortedItems = [...items]
+      .sort((a, b) => a.x - b.x || a.y - b.y)
+      .filter((point, index, array) => index === 0 || point.x !== array[index - 1].x || point.y !== array[index - 1].y);
+
+    if (sortedItems.length <= 3) {
+      return sortedItems;
+    }
+
+    const lower = [];
+    sortedItems.forEach((point) => {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+        lower.pop();
+      }
+      lower.push(point);
+    });
+
+    const upper = [];
+    [...sortedItems].reverse().forEach((point) => {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+        upper.pop();
+      }
+      upper.push(point);
+    });
+
+    return lower.slice(0, -1).concat(upper.slice(0, -1));
+  }
+
+  function distanceToLine(point, start, end) {
+    const lineLength = Math.hypot(end.x - start.x, end.y - start.y);
+
+    if (lineLength === 0) {
+      return Math.hypot(point.x - start.x, point.y - start.y);
+    }
+
+    return Math.abs((end.y - start.y) * point.x - (end.x - start.x) * point.y + end.x * start.y - end.y * start.x) / lineLength;
+  }
+
+  function simplifyPath(items, tolerance) {
+    if (items.length <= 3) {
+      return items;
+    }
+
+    let maxDistance = 0;
+    let splitIndex = 0;
+    const lastIndex = items.length - 1;
+
+    for (let index = 1; index < lastIndex; index += 1) {
+      const distance = distanceToLine(items[index], items[0], items[lastIndex]);
+
+      if (distance > maxDistance) {
+        maxDistance = distance;
+        splitIndex = index;
+      }
+    }
+
+    if (maxDistance > tolerance) {
+      const first = simplifyPath(items.slice(0, splitIndex + 1), tolerance);
+      const second = simplifyPath(items.slice(splitIndex), tolerance);
+      return first.slice(0, -1).concat(second);
+    }
+
+    return [items[0], items[lastIndex]];
+  }
+
+  function removeTinySegments(items, minDistance) {
+    return items.filter((point, index, array) => {
+      if (index === 0) {
+        return true;
+      }
+
+      const previous = array[index - 1];
+      return Math.hypot(point.x - previous.x, point.y - previous.y) >= minDistance;
+    });
+  }
+
+  const boundsWidth = Math.max(1, bounds.maxX - bounds.minX);
+  const boundsHeight = Math.max(1, bounds.maxY - bounds.minY);
+  const density = (foregroundCount * step * step) / Math.max(1, boundsWidth * boundsHeight);
+  const hull = convexHull(points);
+  const pathPoints =
+    density < 0.22
+      ? removeTinySegments(simplifyPath([...hull, hull[0]], Math.max(5, Math.min(boundsWidth, boundsHeight) * 0.06)).slice(0, -1), Math.max(6, Math.min(boundsWidth, boundsHeight) * 0.05))
+      : points;
   const center = points.reduce(
     (total, point) => ({ x: total.x + point.x / points.length, y: total.y + point.y / points.length }),
     { x: 0, y: 0 },
   );
-  const sorted = points
+  const sorted = pathPoints
     .sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x))
-    .filter((_, index) => index % Math.max(1, Math.floor(points.length / 90)) === 0)
+    .filter((_, index) => index % Math.max(1, Math.floor(pathPoints.length / 90)) === 0)
     .slice(0, 120);
-  const normalized = sorted.map((point) => ({
-    x: 34 + (point.x / width) * 232,
-    y: 34 + (point.y / height) * 232,
-  }));
+  const fitSize = Math.max(boundsWidth, boundsHeight);
+  const offsetX = bounds.minX - Math.max(0, (fitSize - boundsWidth) / 2);
+  const offsetY = bounds.minY - Math.max(0, (fitSize - boundsHeight) / 2);
+  const normalized = removeTinySegments(
+    sorted.map((point) => ({
+      x: 34 + ((point.x - offsetX) / fitSize) * 232,
+      y: 34 + ((point.y - offsetY) / fitSize) * 232,
+    })),
+    10,
+  );
   const [first, ...rest] = normalized;
   const lines = rest.map((point) => `L${point.x.toFixed(1)} ${point.y.toFixed(1)}`);
   return `M${first.x.toFixed(1)} ${first.y.toFixed(1)} ${lines.join(" ")} Z`;
