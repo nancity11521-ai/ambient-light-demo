@@ -118,11 +118,6 @@ const drawBoard = document.querySelector("#drawBoard");
 const drawModeSwitch = document.querySelector("#drawModeSwitch");
 const pngShapeInput = document.querySelector("#pngShapeInput");
 const pngStatus = document.querySelector("#pngStatus");
-const shapeRecordList = document.querySelector("#shapeRecordList");
-const shapeRecordCount = document.querySelector("#shapeRecordCount");
-const shapeFolderFilter = document.querySelector("#shapeFolderFilter");
-const shapeFolderNameInput = document.querySelector("#shapeFolderNameInput");
-const renameShapeFolder = document.querySelector("#renameShapeFolder");
 const clearDraw = document.querySelector("#clearDraw");
 const undoPoint = document.querySelector("#undoPoint");
 const applyDraw = document.querySelector("#applyDraw");
@@ -559,139 +554,6 @@ function loadUploadedShapeRecords() {
   }
 }
 
-function applyUploadedShapeRecord(record) {
-  currentShape = {
-    id: record.id,
-    name: record.name,
-    path: record.path,
-  };
-  setPath(currentShape.path, currentShape.name);
-  pngStatus.textContent = `已载入记录：${record.name}`;
-  document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
-}
-
-function renderUploadedShapeRecords() {
-  const folders = [...new Set(uploadedShapeRecords.map((record) => record.folder || "默认"))].sort((a, b) => a.localeCompare(b, "zh-CN"));
-  const selectedFolder = folders.includes(shapeFolderFilter.value) ? shapeFolderFilter.value : "";
-  const filteredRecords = selectedFolder
-    ? uploadedShapeRecords.filter((record) => (record.folder || "默认") === selectedFolder)
-    : uploadedShapeRecords;
-
-  shapeFolderFilter.innerHTML = '<option value="">全部文件夹</option>';
-  folders.forEach((folder) => {
-    const option = document.createElement("option");
-    option.value = folder;
-    option.textContent = folder;
-    option.selected = folder === selectedFolder;
-    shapeFolderFilter.append(option);
-  });
-  shapeFolderFilter.value = selectedFolder;
-  shapeFolderNameInput.value = selectedFolder;
-  shapeFolderNameInput.disabled = !selectedFolder;
-  renameShapeFolder.disabled = !selectedFolder;
-
-  shapeRecordCount.textContent = selectedFolder ? `${filteredRecords.length}/${uploadedShapeRecords.length} records` : `${uploadedShapeRecords.length} records`;
-  shapeRecordList.innerHTML = "";
-
-  if (!filteredRecords.length) {
-    shapeRecordList.innerHTML = '<div class="record-card"><span>暂无上传形状记录</span></div>';
-    return;
-  }
-
-  filteredRecords.forEach((record) => {
-    const card = document.createElement("div");
-    const title = document.createElement("strong");
-    const detail = document.createElement("span");
-    const editGrid = document.createElement("div");
-    const nameLabel = document.createElement("label");
-    const nameText = document.createElement("span");
-    const nameInput = document.createElement("input");
-    const folderLabel = document.createElement("label");
-    const folderText = document.createElement("span");
-    const folderInput = document.createElement("input");
-    const actions = document.createElement("div");
-    const saveButton = document.createElement("button");
-    const loadButton = document.createElement("button");
-    const deleteButton = document.createElement("button");
-
-    card.className = "record-card";
-    editGrid.className = "record-edit-grid";
-    actions.className = "record-actions";
-    title.textContent = record.name;
-    detail.textContent = `${record.folder || "默认"} / ${new Date(record.createdAt).toLocaleString("zh-CN", {
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-    nameText.textContent = "图片名称";
-    folderText.textContent = "所属文件夹";
-    nameInput.type = "text";
-    nameInput.value = record.name;
-    nameInput.placeholder = "形状名称";
-    folderInput.type = "text";
-    folderInput.value = record.folder || "默认";
-    folderInput.placeholder = "例如：三角形 / 客户A";
-    saveButton.type = "button";
-    saveButton.textContent = "保存";
-    loadButton.type = "button";
-    loadButton.textContent = "载入";
-    deleteButton.type = "button";
-    deleteButton.textContent = "删除";
-
-    saveButton.addEventListener("click", () => {
-      const nextName = nameInput.value.trim();
-      const nextFolder = folderInput.value.trim() || "默认";
-
-      if (!nextName) {
-        nameInput.focus();
-        return;
-      }
-
-      record.name = nextName;
-      record.folder = nextFolder;
-      saveUploadedShapeRecords();
-      renderUploadedShapeRecords();
-      pngStatus.textContent = `已更新记录：${record.name}`;
-    });
-    loadButton.addEventListener("click", () => applyUploadedShapeRecord(record));
-    deleteButton.addEventListener("click", () => {
-      uploadedShapeRecords = uploadedShapeRecords.filter((item) => item.id !== record.id);
-      saveUploadedShapeRecords();
-      renderUploadedShapeRecords();
-    });
-
-    nameLabel.append(nameText, nameInput);
-    folderLabel.append(folderText, folderInput);
-    editGrid.append(nameLabel, folderLabel);
-    actions.append(saveButton, loadButton, deleteButton);
-    card.append(title, detail, editGrid, actions);
-    shapeRecordList.append(card);
-  });
-}
-
-function renameSelectedShapeFolder() {
-  const currentFolder = shapeFolderFilter.value;
-  const nextFolder = shapeFolderNameInput.value.trim() || "默认";
-
-  if (!currentFolder || currentFolder === nextFolder) {
-    return;
-  }
-
-  uploadedShapeRecords = uploadedShapeRecords.map((record) =>
-    (record.folder || "默认") === currentFolder
-      ? {
-          ...record,
-          folder: nextFolder,
-        }
-      : record,
-  );
-  shapeFolderFilter.value = nextFolder;
-  saveUploadedShapeRecords();
-  renderUploadedShapeRecords();
-  pngStatus.textContent = `已重命名文件夹：${nextFolder}`;
-}
-
 function saveUploadedShapeRecord(name, path) {
   const record = {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -703,7 +565,6 @@ function saveUploadedShapeRecord(name, path) {
 
   uploadedShapeRecords = [record, ...uploadedShapeRecords.filter((item) => item.path !== path)].slice(0, 24);
   saveUploadedShapeRecords();
-  renderUploadedShapeRecords();
 }
 
 function renderRecords() {
@@ -1358,8 +1219,6 @@ function setupControls() {
   pngShapeInput.addEventListener("change", (event) => {
     importPngShape(event.target.files[0]);
   });
-  shapeFolderFilter.addEventListener("change", renderUploadedShapeRecords);
-  renameShapeFolder.addEventListener("click", renameSelectedShapeFolder);
   applyCustomEffect.addEventListener("click", applyGeneratedEffect);
   audioInput.addEventListener("change", (event) => {
     setupAudioFile(event.target.files[0]);
@@ -1388,6 +1247,30 @@ function setupControls() {
   });
 }
 
+function applyPendingUploadedShape() {
+  let pendingShape;
+
+  try {
+    pendingShape = JSON.parse(localStorage.getItem("ambientLightPendingShape") ?? "null");
+  } catch {
+    pendingShape = null;
+  }
+
+  if (!pendingShape?.path) {
+    return;
+  }
+
+  currentShape = {
+    id: pendingShape.id || "uploaded-shape",
+    name: pendingShape.name || "上传记录形状",
+    path: pendingShape.path,
+  };
+  setPath(currentShape.path, currentShape.name);
+  pngStatus.textContent = `已载入上传记录：${currentShape.name}`;
+  document.querySelectorAll(".shape-button").forEach((button) => button.classList.remove("is-active"));
+  localStorage.removeItem("ambientLightPendingShape");
+}
+
 function boot() {
   loadRecords();
   loadUploadedShapeRecords();
@@ -1395,7 +1278,6 @@ function boot() {
   renderShapes();
   renderScenarios();
   renderRecords();
-  renderUploadedShapeRecords();
   setupTabs();
   setupDrawing();
   setupControls();
@@ -1405,6 +1287,7 @@ function boot() {
   setLedConfig(groupCountInput.value, lightsPerGroupInput.value);
   setShape(currentShape.id);
   setEffect(currentEffect.id);
+  applyPendingUploadedShape();
 }
 
 boot();

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>上传记录</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="records-page">
+    <main class="records-shell">
+      <header class="records-header">
+        <div>
+          <p class="kicker">Upload Records</p>
+          <h1>上传记录</h1>
+        </div>
+        <a class="record-link compact" href="./index.html">返回调试台</a>
+      </header>
+
+      <section class="records-board">
+        <aside class="folder-panel">
+          <div class="section-heading">
+            <span>Folders</span>
+            <output id="recordTotal">0 records</output>
+          </div>
+          <label class="shape-folder-filter">
+            <span>文件夹</span>
+            <select id="shapeFolderFilter">
+              <option value="">全部文件夹</option>
+            </select>
+          </label>
+          <div class="shape-folder-editor">
+            <label>
+              <span>文件夹名称</span>
+              <input id="shapeFolderNameInput" type="text" placeholder="选择文件夹后编辑名称" />
+            </label>
+            <button type="button" id="renameShapeFolder">保存</button>
+          </div>
+        </aside>
+
+        <section class="records-panel">
+          <div class="section-heading">
+            <span>Shapes</span>
+            <output id="shapeRecordCount">0 records</output>
+          </div>
+          <div class="record-list upload-record-list" id="shapeRecordList"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./upload-records.js"></script>
+  </body>
+</html>
