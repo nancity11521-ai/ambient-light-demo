@@ -337,28 +337,6 @@ function buildMotionLayer(path) {
 
 function renderLedLayout(existingLength) {
   ledLayer.innerHTML = "";
-
-  if (!lightPath.getAttribute("d")) {
-    return;
-  }
-
-  const length = existingLength ?? lightPath.getTotalLength();
-  const totalLights = ledConfig.groups * ledConfig.perGroup;
-  const groupPalette = ["#33e6c5", "#d9b35f", "#ff6d7a", "#61a8ff", "#9ee66d", "#f0f3d6"];
-
-  for (let index = 0; index < totalLights; index += 1) {
-    const distance = totalLights === 1 ? 0 : (length * index) / totalLights;
-    const point = lightPath.getPointAtLength(distance);
-    const groupIndex = Math.floor(index / ledConfig.perGroup);
-    const led = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    const isStart = index % ledConfig.perGroup === 0;
-    led.setAttribute("cx", point.x.toFixed(2));
-    led.setAttribute("cy", point.y.toFixed(2));
-    led.setAttribute("r", isStart ? "3.4" : "2.35");
-    led.setAttribute("fill", groupPalette[groupIndex % groupPalette.length]);
-    led.classList.toggle("is-start", isStart);
-    ledLayer.append(led);
-  }
 }
 
 function setShape(shapeId) {
@@ -854,28 +832,61 @@ function applyCustomPath(points, name, options) {
 }
 
 function imageDataToPath(imageData, width, height) {
-  const points = [];
   const data = imageData.data;
   const step = Math.max(2, Math.floor(Math.min(width, height) / 72));
+  const sampleSize = Math.max(2, Math.floor(Math.min(width, height) / 18));
+  const cornerSamples = [
+    { x: sampleSize, y: sampleSize },
+    { x: width - sampleSize, y: sampleSize },
+    { x: sampleSize, y: height - sampleSize },
+    { x: width - sampleSize, y: height - sampleSize },
+  ];
+  const background = cornerSamples.reduce(
+    (total, sample) => {
+      const index = (sample.y * width + sample.x) * 4;
+      return {
+        r: total.r + data[index] / cornerSamples.length,
+        g: total.g + data[index + 1] / cornerSamples.length,
+        b: total.b + data[index + 2] / cornerSamples.length,
+        a: total.a + data[index + 3] / cornerSamples.length,
+      };
+    },
+    { r: 0, g: 0, b: 0, a: 0 },
+  );
+  const transparentPixels = Array.from({ length: Math.floor(data.length / 4) }, (_, index) => data[index * 4 + 3]).filter(
+    (alpha) => alpha < 80,
+  ).length;
+  const usesTransparency = transparentPixels > width * height * 0.08;
+
+  function isForeground(x, y) {
+    const index = (y * width + x) * 4;
+    const alpha = data[index + 3];
+
+    if (usesTransparency) {
+      return alpha > 40;
+    }
+
+    const colorDistance = Math.hypot(data[index] - background.r, data[index + 1] - background.g, data[index + 2] - background.b);
+    const brightness = (data[index] + data[index + 1] + data[index + 2]) / 3;
+    const backgroundBrightness = (background.r + background.g + background.b) / 3;
+    return alpha > 40 && (colorDistance > 34 || Math.abs(brightness - backgroundBrightness) > 28);
+  }
+
+  const points = [];
 
   for (let y = step; y < height - step; y += step) {
     for (let x = step; x < width - step; x += step) {
-      const index = (y * width + x) * 4;
-      const alpha = data[index + 3];
-      const brightness = (data[index] + data[index + 1] + data[index + 2]) / 3;
-      const current = alpha > 40 && brightness > 24;
-
-      if (!current) {
+      if (!isForeground(x, y)) {
         continue;
       }
 
       const neighbors = [
-        ((y - step) * width + x) * 4,
-        ((y + step) * width + x) * 4,
-        (y * width + x - step) * 4,
-        (y * width + x + step) * 4,
+        { x, y: y - step },
+        { x, y: y + step },
+        { x: x - step, y },
+        { x: x + step, y },
       ];
-      const isEdge = neighbors.some((neighborIndex) => data[neighborIndex + 3] <= 40);
+      const isEdge = neighbors.some((neighbor) => !isForeground(neighbor.x, neighbor.y));
 
       if (isEdge) {
         points.push({ x, y });
