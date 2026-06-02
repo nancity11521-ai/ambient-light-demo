@@ -1644,42 +1644,23 @@ h1 {
     stroke: #7cf26d;
   }
 }/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
-/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
-
-/* 2色律动呼吸：类似于魅族 21 Pro Aicy 灵动环的随音旋转律动效果！双色渐变环形分列，随节拍加速旋转和强弱缩放 */
-.mode-music-dual-color-breathe .preview-light {
-  stroke: url("#meizuStroke");
-  stroke-dasharray: var(--path-length) 0;
-  transform-origin: 150px 150px;
-  transform: rotate(var(--music-rotation, 0deg));
-  opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
-  transition: none !important;
-}
-.mode-music-dual-color-breathe .preview-glow {
-  stroke: url("#meizuStroke");
-  stroke-dasharray: var(--path-length) 0;
-  transform-origin: 150px 150px;
-  transform: rotate(var(--music-rotation, 0deg));
-  opacity: calc(var(--intensity) * var(--music-intensity) * 0.22);
-  stroke-width: calc(26px * var(--music-scale));
-  transition: none !important;
-}
-
-/* 3色与4色律动呼吸：保持原来的平滑切换逻辑（一直有颜色在，每秒自动切换） */
+.mode-music-dual-color-breathe .preview-light,
 .mode-music-tri-color-breathe .preview-light,
 .mode-music-quad-color-breathe .preview-light {
   stroke: var(--music-breathe-color);
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-breathe-opacity));
   stroke-width: calc(14px * var(--music-scale));
+  transition: none !important;
 }
+.mode-music-dual-color-breathe .preview-glow,
 .mode-music-tri-color-breathe .preview-glow,
 .mode-music-quad-color-breathe .preview-glow {
   stroke: var(--music-breathe-color);
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.22);
   stroke-width: calc(26px * var(--music-scale));
+  transition: none !important;
 }
 /* 哪怕在 .is-rainbow 状态下，双色、三色、四色呼吸也要强制以多色呼吸层为主渲染，隐藏多余的彩虹流光层 */
 .is-rainbow.mode-music-dual-color-breathe .rainbow-flow-layer path,
