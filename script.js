@@ -167,6 +167,7 @@ let audioSource;
 let audioFrameId;
 let recorder;
 let recordedChunks = [];
+let userSpeed = Number(speedSlider.value) || 1;
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -197,11 +198,16 @@ function setRainbow(enabled) {
 
 function setSpeed(value) {
   const speed = Number(value);
-  root.style.setProperty("--speed", speed.toFixed(2));
+  userSpeed = speed;
+  applyEffectiveSpeed(speed);
   speedSlider.value = speed.toFixed(2);
   speedReadout.textContent = `${speed.toFixed(2)}x`;
-  updateMotionDurations(speed);
   updateSelectedSummary();
+}
+
+function applyEffectiveSpeed(speed) {
+  root.style.setProperty("--speed", speed.toFixed(2));
+  updateMotionDurations(speed);
 }
 
 function updateMotionDurations(speed) {
@@ -337,7 +343,7 @@ function buildMotionLayer(path) {
     <animateMotion class="meteor-motion" dur="1.65s" repeatCount="indefinite" rotate="auto"><mpath href="#orbitMotionPath"></mpath></animateMotion>
   `;
   motionLayer.append(meteor);
-  updateMotionDurations(Number(speedSlider.value));
+  updateMotionDurations(userSpeed);
 }
 
 function renderLedLayout(existingLength) {
@@ -853,10 +859,11 @@ function analyzeAudioFrame() {
   const bass = frequencyData.slice(0, 12).reduce((total, value) => total + value, 0) / 12;
   const energy = Math.min(1, average / 150);
   const bassEnergy = Math.min(1, bass / 180);
+  const effectiveSpeed = Math.max(0.22, Math.min(2.4, userSpeed * (0.65 + bassEnergy * 0.9)));
   setIntensity(Math.round(48 + energy * 52));
-  setSpeed((0.75 + bassEnergy * 1.55).toFixed(2));
+  applyEffectiveSpeed(effectiveSpeed);
   root.style.setProperty("--custom-tempo", (0.9 + energy * 1.6).toFixed(2));
-  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% / 低频 ${Math.round(bassEnergy * 100)}%`;
+  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% / 低频 ${Math.round(bassEnergy * 100)}% / 速度 ${userSpeed.toFixed(2)}x`;
   audioFrameId = requestAnimationFrame(analyzeAudioFrame);
 }
 
@@ -1414,6 +1421,7 @@ function setupControls() {
   audioPlayer.addEventListener("play", startAudioAnalysis);
   audioPlayer.addEventListener("pause", () => {
     cancelAnimationFrame(audioFrameId);
+    applyEffectiveSpeed(userSpeed);
     audioStatus.textContent = "已暂停音乐律动";
   });
   recordAnimation.addEventListener("click", recordPreviewAnimation);
