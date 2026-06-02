@@ -1173,49 +1173,45 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 能量随动物理阻尼切换引擎 (全新3色流体律动版)
-    // 根据音乐实时能量强度，动态在青、黄、绿三色间流动：
-    // - 低能量 (<= 0.32): 稳定在纯青色 (#33e6c5)
-    // - 中能量 (0.32 ~ 0.65): 优雅在青色与黄色 (#ffd45f) 之间平滑流转
-    // - 巅峰高能量 (> 0.65): 强力冲刺到黄色与绿色 (#36e67f) 的高潮区间
-    // 引入阻尼平滑算法，确保色彩转换呈现完全的流体阻尼感，无任何高频晃眼或突变闪烁！
+    // 🌊 能量调制三色无缝流动引擎 (全新流体时间耦合版)
+    // 解决长时间停留在单一颜色的痛点，通过「时间流速 + 能量偏移」双驱动：
+    // - 即使完全静止或低能量下，基准色相也会以优雅速度在青、黄、绿之间缓慢流转 (绝不卡死)
+    // - 能量升高时，时间流速自动倍增，同时重拍会产生强烈的瞬态相移拉扯
+    // - 物理阻尼平滑计算，确保低中高频段下色彩均呈现完全自然的流体流动感
     // ========================================================
-    if (window.triColorProgress === undefined) {
-      window.triColorProgress = 0.0;
+    if (window.triColorBasePhase === undefined) {
+      window.triColorBasePhase = 0.0;
+    }
+    if (window.triColorOffset === undefined) {
+      window.triColorOffset = 0.0;
     }
     
-    // 映射音乐能量到目标进度区间 [0.0, 2.0]
-    let targetProgress = 0.0;
-    if (musicEnergy <= 0.32) {
-      targetProgress = 0.0; // 锁定在纯青色
-    } else if (musicEnergy <= 0.65) {
-      // 0.32 ~ 0.65 映射至 0.0 ~ 1.0 (青 -> 黄)
-      targetProgress = (musicEnergy - 0.32) / 0.33;
-    } else {
-      // 0.65 ~ 1.0 映射至 1.0 ~ 2.0 (黄 -> 绿)
-      targetProgress = 1.0 + Math.min(1.0, (musicEnergy - 0.65) / 0.35);
-    }
+    // 1. 时间基础流速 (无声时约 16s 自循环一周，保证随时双色流转)
+    const baseSpeed = 0.18 * userSpeed;
     
-    // 物理阻尼平滑更新：阻尼系数 9.5 兼顾瞬态反应与优雅流体感
-    window.triColorProgress += (targetProgress - window.triColorProgress) * Math.min(1.0, dt * 9.5);
+    // 2. 能量流速调制 (高能量下流速大幅加快)
+    const energySpeed = musicEnergy * 1.6 * userSpeed;
+    window.triColorBasePhase += (baseSpeed + energySpeed) * dt;
+    window.triColorBasePhase = window.triColorBasePhase % 3.0;
     
-    // 限制边界
-    window.triColorProgress = Math.max(0.0, Math.min(2.0, window.triColorProgress));
+    // 3. 瞬态能量偏移拉扯 (重拍时将颜色向前推移)
+    const targetOffset = musicEnergy * 1.35;
+    window.triColorOffset += (targetOffset - window.triColorOffset) * Math.min(1.0, dt * 10.5);
     
-    // 双线性颜色插值
+    // 4. 计算最终三色环色相进度 [0.0, 3.0]
+    const finalProgress = (window.triColorBasePhase + window.triColorOffset) % 3.0;
+    
+    // 双插值三色环无缝融合
     let activeColor = colors[0];
-    if (window.triColorProgress < 1.0) {
-      activeColor = interpolateColor(
-        colors[0],
-        colors[1],
-        window.triColorProgress
-      );
+    if (finalProgress < 1.0) {
+      // 青色 (#33e6c5) -> 黄色 (#ffd45f)
+      activeColor = interpolateColor(colors[0], colors[1], finalProgress);
+    } else if (finalProgress < 2.0) {
+      // 黄色 (#ffd45f) -> 绿色 (#36e67f)
+      activeColor = interpolateColor(colors[1], colors[2], finalProgress - 1.0);
     } else {
-      activeColor = interpolateColor(
-        colors[1],
-        colors[2],
-        window.triColorProgress - 1.0
-      );
+      // 绿色 (#36e67f) -> 青色 (#33e6c5)
+      activeColor = interpolateColor(colors[2], colors[0], finalProgress - 2.0);
     }
     
     root.style.setProperty("--music-breathe-color", activeColor);
