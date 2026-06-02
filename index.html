@@ -380,12 +380,27 @@
         </div>
 
         <div class="panel" id="musicPanel" data-panel="music">
+          <!-- 音乐播放与控制指示模块 (放在最上方) -->
+          <div class="import-card" style="margin-top: 0; margin-bottom: 16px;">
+            <div class="section-heading" style="margin-bottom: 10px;">
+              <span>Player & Control</span>
+              <output id="audioStatus">上传音乐后，可在列表中随时切换并播放律动</output>
+            </div>
+            <audio id="audioPlayer" controls></audio>
+            <label class="file-trigger" style="margin-top: 10px; min-height: 52px; padding: 6px;">
+              <span>点击上传音乐文件 (.mp3 / .wav)</span>
+              <input id="audioInput" type="file" accept="audio/*" multiple />
+            </label>
+          </div>
+
+          <!-- 律动动效模式选择 -->
           <div class="section-heading">
             <span>Rhythm Modes</span>
             <output id="musicCount">0 patterns</output>
           </div>
           <div class="effect-grid compact" id="musicGrid"></div>
-          <div class="equalizer" aria-hidden="true">
+          
+          <div class="equalizer" aria-hidden="true" style="margin-top: 12px; margin-bottom: 16px;">
             <span></span>
             <span></span>
             <span></span>
@@ -395,20 +410,15 @@
             <span></span>
             <span></span>
           </div>
-          <div class="import-card">
-            <label class="file-trigger">
-              <span>上传音乐到列表</span>
-              <input id="audioInput" type="file" accept="audio/*" multiple />
-            </label>
-            <div class="section-heading compact-heading">
-              <span>Music Library</span>
-              <output id="audioRecordCount">0 tracks</output>
-            </div>
-            <div class="record-list compact-list audio-record-list" id="audioRecordList"></div>
-            <audio id="audioPlayer" controls></audio>
-            <output id="audioStatus">上传音乐后，可在列表中随时切换并播放律动</output>
+
+          <!-- 音乐列表库 -->
+          <div class="section-heading compact-heading" style="margin-top: 16px;">
+            <span>Music Library</span>
+            <output id="audioRecordCount">0 tracks</output>
           </div>
-          <div class="export-actions">
+          <div class="record-list compact-list audio-record-list" id="audioRecordList"></div>
+
+          <div class="export-actions" style="margin-top: 16px;">
             <button type="button" id="recordAnimation">下载动画</button>
             <button type="button" id="downloadSnapshot">下载当前样式</button>
           </div>

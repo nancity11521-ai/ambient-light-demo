@@ -66,6 +66,10 @@ const musicEffects = [
   { id: "music-ref-pulse-rhythm", name: "脉冲律动", desc: "整圈彩色随节拍脉冲" },
   { id: "music-ref-flow", name: "流光律动", desc: "彩色光段沿环形滑动" },
   { id: "music-ref-ripple", name: "涟漪律动", desc: "局部蓝色波纹扩散" },
+  { id: "music-spectrum-wave", name: "频段能量波", desc: "灯组分频起伏，呈现跳动的能量条" },
+  { id: "music-fireworks", name: "节奏花火", desc: "低音重击时随机绽放闪烁星点" },
+  { id: "music-rainbow-rotate", name: "炫彩旋转", desc: "渐变色彩随节奏快速旋转" },
+  { id: "music-strobe-alert", name: "狂热闪烁", desc: "高能电音闪烁，适合派对氛围" },
 ];
 
 const scenarios = [
@@ -168,6 +172,9 @@ let audioFrameId;
 let recorder;
 let recordedChunks = [];
 let userSpeed = Number(speedSlider.value) || 1;
+let lastFrameTime = 0;
+let musicRotationAngle = 0;
+let musicFlowOffset = 0;
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -348,6 +355,30 @@ function buildMotionLayer(path) {
 
 function renderLedLayout(existingLength) {
   ledLayer.innerHTML = "";
+  const length = existingLength || (lightPath && lightPath.getTotalLength()) || 0;
+  if (!length) return;
+
+  const totalLeds = ledConfig.groups * ledConfig.perGroup;
+  for (let i = 0; i < totalLeds; i++) {
+    const distance = (length / totalLeds) * i;
+    const point = lightPath.getPointAtLength(distance);
+    if (!point || isNaN(point.x) || isNaN(point.y)) continue;
+    
+    const led = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    led.setAttribute("cx", point.x.toFixed(2));
+    led.setAttribute("cy", point.y.toFixed(2));
+    led.setAttribute("r", "2.8");
+    
+    // Group starting led
+    const isStart = i % ledConfig.perGroup === 0;
+    if (isStart) {
+      led.classList.add("is-start");
+    }
+    
+    // Stash the index so we can address it in real-time animations
+    led.dataset.index = i;
+    ledLayer.appendChild(led);
+  }
 }
 
 function setShape(shapeId) {
@@ -857,14 +888,105 @@ function analyzeAudioFrame() {
   analyser.getByteFrequencyData(frequencyData);
   const average = frequencyData.reduce((total, value) => total + value, 0) / frequencyData.length;
   const bass = frequencyData.slice(0, 12).reduce((total, value) => total + value, 0) / 12;
+  const mid = frequencyData.slice(12, 60).reduce((total, value) => total + value, 0) / 48;
+  const treble = frequencyData.slice(60, 120).reduce((total, value) => total + value, 0) / 60;
+  
   const energy = Math.min(1, average / 150);
   const bassEnergy = Math.min(1, bass / 180);
-  const effectiveSpeed = Math.max(0.22, Math.min(2.4, userSpeed * (0.65 + bassEnergy * 0.9)));
-  setIntensity(Math.round(48 + energy * 52));
-  applyEffectiveSpeed(effectiveSpeed);
+  const midEnergy = Math.min(1, mid / 150);
+  const trebleEnergy = Math.min(1, treble / 120);
+
+  // Set real-time rhythm variables inside CSS (stroke width, opacity, glow etc.)
+  root.style.setProperty("--music-intensity", (0.2 + energy * 0.8).toFixed(2));
+  root.style.setProperty("--music-scale", (0.8 + bassEnergy * 0.45).toFixed(2));
+  root.style.setProperty("--music-glow", (4 + bassEnergy * 18).toFixed(1) + "px");
   root.style.setProperty("--custom-tempo", (0.9 + energy * 1.6).toFixed(2));
-  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% / 低频 ${Math.round(bassEnergy * 100)}% / 速度 ${userSpeed.toFixed(2)}x`;
+  
+  // Calculate strobe variable (for flash/alert effect)
+  const strobe = energy > 0.58 ? 1.0 : 0.08;
+  root.style.setProperty("--music-strobe", strobe.toFixed(2));
+
+  // Base speed factor scales manually with userSpeed and dynamically with bass
+  const speedMultiplier = userSpeed * (0.65 + bassEnergy * 0.9);
+  
+  // Calculate frame delta time
+  const now = performance.now();
+  const dt = lastFrameTime ? (now - lastFrameTime) / 1000 : 0.016;
+  lastFrameTime = now;
+
+  // Accumulate JS rotation and flow offset seamlessly (completely smooth manual speed slider!)
+  musicRotationAngle = (musicRotationAngle || 0) + speedMultiplier * 90 * dt; // 90deg per sec base
+  root.style.setProperty("--music-rotation", `${musicRotationAngle.toFixed(1)}deg`);
+
+  const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
+  musicFlowOffset = (musicFlowOffset || 0) - speedMultiplier * 160 * dt; // 160px per sec base
+  if (Math.abs(musicFlowOffset) > pathLength) {
+    musicFlowOffset = musicFlowOffset % pathLength;
+  }
+  root.style.setProperty("--music-flow-offset", musicFlowOffset.toFixed(1));
+
+  // Effect-specific active JS-driven effects
+  const effectId = currentEffect.id;
+  if (effectId === "music-spectrum-wave") {
+    // Dynamically scale/color individual LEDs based on different frequency bands!
+    const totalLeds = ledConfig.groups * ledConfig.perGroup;
+    const leds = ledLayer.querySelectorAll("circle");
+    leds.forEach((led, idx) => {
+      const ledPercent = idx / totalLeds;
+      let activeVal = 0;
+      if (ledPercent < 0.25) {
+        activeVal = bassEnergy;
+      } else if (ledPercent < 0.75) {
+        activeVal = midEnergy;
+      } else {
+        activeVal = trebleEnergy;
+      }
+      
+      const isStart = led.classList.contains("is-start");
+      led.style.fill = isStart ? `rgb(255, ${Math.round(200 + activeVal * 55)}, 120)` : `rgb(${Math.round(51 + activeVal * 204)}, ${Math.round(230 + activeVal * 25)}, ${Math.round(197 - activeVal * 100)})`;
+      led.style.opacity = (0.25 + activeVal * 0.75).toFixed(2);
+      led.style.r = (2.8 + activeVal * 1.5).toFixed(1);
+    });
+  } else if (effectId === "music-fireworks") {
+    // Bass hit triggers fireworks bursts along the light path!
+    if (bassEnergy > 0.65 && Math.random() < 0.15) {
+      triggerSparkBurst(pathLength);
+    }
+  }
+
+  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% | 低频 ${Math.round(bassEnergy * 100)}% | 基础速度 ${userSpeed.toFixed(2)}x`;
   audioFrameId = requestAnimationFrame(analyzeAudioFrame);
+}
+
+function triggerSparkBurst(length) {
+  if (!length) return;
+  const count = 4 + Math.floor(Math.random() * 4);
+  const baseIdx = Math.floor(Math.random() * count);
+  const point = lightPath.getPointAtLength((length / count) * baseIdx + Math.random() * 20);
+  if (!point || isNaN(point.x) || isNaN(point.y)) return;
+  
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const spark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    spark.setAttribute("cx", point.x.toFixed(2));
+    spark.setAttribute("cy", point.y.toFixed(2));
+    spark.setAttribute("r", "2");
+    spark.style.fill = `hsl(${Math.random() * 360}, 95%, 70%)`;
+    spark.style.opacity = "1";
+    
+    const driftX = Math.cos(angle) * (15 + Math.random() * 15);
+    const driftY = Math.sin(angle) * (15 + Math.random() * 15);
+    spark.animate([
+      { transform: 'translate(0px, 0px)', opacity: 1, r: '2.5px' },
+      { transform: `translate(${driftX.toFixed(1)}px, ${driftY.toFixed(1)}px)`, opacity: 0, r: '0.5px' }
+    ], {
+      duration: 500 + Math.random() * 300,
+      easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
+    });
+    
+    sparkLayer.appendChild(spark);
+    setTimeout(() => spark.remove(), 800);
+  }
 }
 
 function downloadBlob(blob, filename) {

@@ -1454,6 +1454,58 @@ h1 {
   animation: refRipple calc(1.85s / var(--speed)) ease-in-out infinite;
 }
 
+/* --- 新增音乐律动效果的 CSS 规则 --- */
+
+/* 1. 频段能量波 (Spectrum Wave) */
+.mode-music-spectrum-wave .led-layer {
+  display: block;
+}
+.mode-music-spectrum-wave .preview-light,
+.mode-music-spectrum-wave .preview-glow {
+  opacity: calc(var(--intensity) * 0.12); /* 仅底层极弱微光，主要由 LED 珠子表现 */
+}
+
+/* 2. 节奏花火 (Fireworks Burst) */
+.mode-music-fireworks .preview-light {
+  stroke-dasharray: calc(var(--path-length) * 0.05) calc(var(--path-length) * 0.95);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-intensity) * 0.4);
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
+}
+
+/* 3. 炫彩旋转 (Rainbow Rotate) */
+.mode-music-rainbow-rotate .rainbow-flow-layer path {
+  display: block;
+  stroke-dasharray: var(--path-length) 0;
+  transform-origin: 150px 150px;
+  transform: rotate(var(--music-rotation, 0deg));
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(11px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(255 214 95 / 0.5));
+}
+/* 在彩色开启状态下炫彩旋转 */
+.is-rainbow.mode-music-rainbow-rotate .rainbow-flow-layer path {
+  display: block;
+}
+
+/* 4. 狂热闪烁 (Strobe Strobe) */
+.mode-music-strobe-alert .preview-light {
+  stroke: #ff3b30;
+  stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-strobe));
+  stroke-width: calc(12px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) #ff2a2a);
+}
+.is-rainbow.mode-music-strobe-alert .rainbow-flow-layer path {
+  display: block;
+  stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-strobe));
+  stroke-width: calc(12px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(51 230 197 / 0.5));
+}
+
 @keyframes refBreath {
   0%,
   100% {
