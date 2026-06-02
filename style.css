@@ -280,7 +280,7 @@ h1 {
 .rainbow-flow-layer path {
   display: none;
   fill: none;
-  stroke-width: 11;
+  stroke-width: 14;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: calc(var(--intensity) * 0.95);
@@ -1653,7 +1653,7 @@ h1 {
   stroke: var(--music-breathe-color) !important;
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-breathe-opacity)) !important;
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   transition: none !important;
 }
 .mode-music-dual-color-breathe .preview-glow,
@@ -1665,7 +1665,7 @@ h1 {
   stroke: var(--music-breathe-color) !important;
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.22) !important;
-  stroke-width: calc(26px * var(--music-scale));
+  stroke-width: 26px;
   transition: none !important;
 }
 
@@ -1697,14 +1697,14 @@ h1 {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 .is-rainbow.mode-music-ref-pulse-rhythm .rainbow-flow-layer path {
   display: block;
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 
@@ -1714,7 +1714,7 @@ h1 {
   stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(15px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 .is-rainbow.mode-music-ref-flow .rainbow-flow-layer path {
@@ -1722,7 +1722,7 @@ h1 {
   stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(15px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 
@@ -1733,14 +1733,14 @@ h1 {
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
 .mode-music-ref-ripple .preview-light-alt {
   stroke: #36e6ff;
   stroke-dashoffset: calc(var(--music-flow-offset) * 0.65); /* different offset speed */
   opacity: calc(var(--intensity) * var(--music-intensity) * 0.72);
-  stroke-width: calc(11px * var(--music-scale));
+  stroke-width: 11px;
   filter: drop-shadow(0 0 calc(var(--music-glow) * 0.8) #36e6ff);
 }
 .is-rainbow.mode-music-ref-ripple .rainbow-flow-layer path {
@@ -1749,7 +1749,7 @@ h1 {
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
 
@@ -1767,7 +1767,7 @@ h1 {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(14px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 
@@ -1786,7 +1786,7 @@ h1 {
   transform-origin: 150px 150px;
   transform: rotate(var(--music-rotation, 0deg));
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(15px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(255 214 95 / 0.5));
 }
 /* 在彩色开启状态下炫彩旋转 */
@@ -1800,7 +1800,7 @@ h1 {
   stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-strobe));
-  stroke-width: calc(16px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) #ff2a2a);
 }
 .is-rainbow.mode-music-strobe-alert .rainbow-flow-layer path {
@@ -1808,7 +1808,7 @@ h1 {
   stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-strobe));
-  stroke-width: calc(16px * var(--music-scale));
+  stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(51 230 197 / 0.5));
 }
 
@@ -1816,12 +1816,10 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * 0.18);
-    stroke-width: 8;
   }
 
   50% {
     opacity: var(--intensity);
-    stroke-width: 12;
   }
 }
 
@@ -1829,19 +1827,16 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * 0.1);
-    stroke-width: 8;
   }
 
   20%,
   62% {
     opacity: var(--intensity);
-    stroke-width: 14;
   }
 
   38%,
   78% {
     opacity: calc(var(--intensity) * 0.2);
-    stroke-width: 9;
   }
 }
 
@@ -1849,22 +1844,18 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * 0.18);
-    stroke-width: 8;
   }
 
   28% {
     opacity: var(--intensity);
-    stroke-width: 13;
   }
 
   52% {
     opacity: calc(var(--intensity) * 0.42);
-    stroke-width: 10;
   }
 
   76% {
     opacity: calc(var(--intensity) * 0.92);
-    stroke-width: 12;
   }
 }
 
@@ -1872,18 +1863,15 @@ h1 {
   0% {
     opacity: calc(var(--intensity) * 0.08);
     stroke-dashoffset: var(--offset-ref-ripple-start);
-    stroke-width: 7;
   }
 
   45% {
     opacity: var(--intensity);
-    stroke-width: 11;
   }
 
   100% {
     opacity: calc(var(--intensity) * 0.12);
     stroke-dashoffset: var(--offset-full);
-    stroke-width: 8;
   }
 }
 
@@ -1891,18 +1879,15 @@ h1 {
   0% {
     opacity: calc(var(--intensity) * 0.08);
     stroke-dashoffset: var(--offset-ref-ripple-alt-start);
-    stroke-width: 7;
   }
 
   45% {
     opacity: var(--intensity);
-    stroke-width: 11;
   }
 
   100% {
     opacity: calc(var(--intensity) * 0.12);
     stroke-dashoffset: var(--offset-ref-ripple-alt-end);
-    stroke-width: 8;
   }
 }
 
@@ -1916,12 +1901,10 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * 0.25);
-    stroke-width: 8;
   }
 
   50% {
     opacity: var(--intensity);
-    stroke-width: 12;
   }
 }
 
@@ -1971,56 +1954,40 @@ h1 {
 @keyframes pulseFlash {
   0% {
     opacity: calc(var(--intensity) * 0.12);
-    stroke-width: 8;
   }
 
   18%,
   46% {
     opacity: var(--intensity);
-    stroke-width: 15;
   }
 
   30%,
   58% {
     opacity: calc(var(--intensity) * 0.25);
-    stroke-width: 9;
   }
 
   100% {
     opacity: calc(var(--intensity) * 0.12);
-    stroke-width: 8;
   }
 }
 
 @keyframes rippleTrace {
   0% {
     stroke-dashoffset: 0;
-    stroke-width: 7;
-  }
-
-  50% {
-    stroke-width: 13;
   }
 
   100% {
     stroke-dashoffset: var(--offset-half);
-    stroke-width: 7;
   }
 }
 
 @keyframes rippleTraceAlt {
   0% {
     stroke-dashoffset: var(--offset-half);
-    stroke-width: 7;
-  }
-
-  50% {
-    stroke-width: 13;
   }
 
   100% {
     stroke-dashoffset: var(--offset-full);
-    stroke-width: 7;
   }
 }
 
@@ -2076,29 +2043,24 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * var(--custom-low));
-    stroke-width: 8;
   }
 
   38% {
     opacity: var(--intensity);
-    stroke-width: 15;
   }
 }
 
 @keyframes musicBars {
   0% {
     stroke-dasharray: calc(var(--path-length) * 0.04) calc(var(--path-length) * 0.065);
-    stroke-width: 8;
   }
 
   40% {
     stroke-dasharray: calc(var(--path-length) * 0.09) calc(var(--path-length) * 0.035);
-    stroke-width: 14;
   }
 
   100% {
     stroke-dasharray: calc(var(--path-length) * 0.06) calc(var(--path-length) * 0.05);
-    stroke-width: 10;
   }
 }
 
@@ -2106,29 +2068,24 @@ h1 {
   0%,
   100% {
     opacity: calc(var(--intensity) * 0.18);
-    stroke-width: 8;
   }
 
   18% {
     opacity: var(--intensity);
-    stroke-width: 17;
   }
 }
 
 @keyframes waveGroove {
   0% {
     stroke-dashoffset: 0;
-    stroke-width: 8;
   }
 
   50% {
     stroke-dashoffset: calc(var(--path-length) * -0.18);
-    stroke-width: 13;
   }
 
   100% {
     stroke-dashoffset: calc(var(--path-length) * -0.36);
-    stroke-width: 8;
   }
 }
 
@@ -2142,12 +2099,10 @@ h1 {
   0%,
   100% {
     stroke-dashoffset: calc(var(--path-length) * 0.06);
-    stroke-width: 8;
   }
 
   50% {
     stroke-dashoffset: calc(var(--path-length) * -0.2);
-    stroke-width: 13;
   }
 }
 
