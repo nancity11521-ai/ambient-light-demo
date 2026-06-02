@@ -1105,36 +1105,50 @@ function analyzeAudioFrame() {
     const maxOpacity = 0.98;
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
-    // 瞬态节拍检测与状态翻转器 (Beat State-Flip Trigger)：
-    // 通过对比当前帧能量与上一帧的差分增量 (Delta)，敏锐捕捉任何重拍、强拍击中或高频能量骤增的突发瞬间！
-    if (window.lastMusicEnergy === undefined) window.lastMusicEnergy = 0;
-    if (window.colorFlipState === undefined) window.colorFlipState = false; // 初始为青色 (false)
-    if (window.lastFlipTime === undefined) window.lastFlipTime = 0;
+    // ========================================================
+    // 🎭 殿堂级「双频段物理摆锤变色引擎」 (Physics Color Pendulum)
+    // ========================================================
+    if (window.colorPendulumPos === undefined) window.colorPendulumPos = 0.0; // 范围 [0.0, 1.0]，代表青到黄的比重
+    if (window.colorPendulumVel === undefined) window.colorPendulumVel = 0.0; // 物理移动速度
     
-    const now = Date.now();
-    const energyDelta = musicEnergy - window.lastMusicEnergy;
+    // 1. 低音能量强力向「黄色 (1.0)」拉扯摆锤
+    const yellowForce = bassEnergy * bassEnergy * 48.0;
     
-    // 黄金调校：降低触发门槛至 0.055 捕捉中等节拍，收窄冷却期至 165ms 契合密集音轨，使色彩变化更频繁、更动感，同时严守防闪眼的高级感底线
-    if (energyDelta > 0.055 && (now - window.lastFlipTime) > 165) {
-      window.colorFlipState = !window.colorFlipState; // 颜色状态彻底翻转！
-      window.lastFlipTime = now;
+    // 2. 高音能量强力向「青色 (0.0)」拉扯摆锤
+    const cyanForce = trebleEnergy * trebleEnergy * 38.0;
+    
+    // 3. 中音能量产生随机的微幅物理颤噪，让变色细节更加充盈高级
+    const nowTime = Date.now();
+    const jitterForce = Math.sin(nowTime * 0.05) * midEnergy * 8.0;
+    
+    // 4. 自适应弹性回复力：无声时摆锤优雅回归青色底色偏青端 (0.08)
+    const springForce = (0.08 - window.colorPendulumPos) * 15.0;
+    
+    // 5. 阻尼摩擦粘滞力 (平抑高频突变，阻尼维持高质感的液体流畅顺滑感)
+    const frictionForce = -window.colorPendulumVel * 9.0;
+    
+    // 6. Verlet 物理积分迭代
+    const totalForce = yellowForce - cyanForce + springForce + frictionForce + jitterForce;
+    
+    // 迭代物理状态，限制单步 dt 规避卡顿帧跳变
+    const clampedDt = Math.min(0.05, dt);
+    window.colorPendulumVel += totalForce * clampedDt;
+    window.colorPendulumPos += window.colorPendulumVel * clampedDt;
+    
+    // 物理边界撞墙反弹与截断
+    if (window.colorPendulumPos <= 0.0) {
+      window.colorPendulumPos = 0.0;
+      window.colorPendulumVel = 0.0;
+    } else if (window.colorPendulumPos >= 1.0) {
+      window.colorPendulumPos = 1.0;
+      window.colorPendulumVel = 0.0;
     }
-    window.lastMusicEnergy = musicEnergy; // 迭代保存当前能量
     
-    // 根据状态机决定变色目标值：黄色 (1.0) 还是青色 (0.0)
-    const targetProgress = window.colorFlipState ? 1.0 : 0.0;
-    
-    if (window.dualColorBreatheProgress === undefined) {
-      window.dualColorBreatheProgress = 0;
-    }
-    
-    // 敏捷跟手阻尼器：将物理过渡速度提升至 24.0，使色彩切换更轻快有弹性，契合更密集的节拍变幻
-    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 24.0);
-    
+    // 使用摆锤当前物理位置插值出最终的变色渲染方案
     const activeColor = interpolateColor(
       colors[0], // 青色
       colors[1], // 黄色
-      window.dualColorBreatheProgress
+      window.colorPendulumPos
     );
     
     root.style.setProperty("--music-breathe-color", activeColor);
