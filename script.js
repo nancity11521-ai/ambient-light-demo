@@ -1105,21 +1105,31 @@ function analyzeAudioFrame() {
     const maxOpacity = 0.98;
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
-    // 动态多频段联合瞬态脉冲切换器：
-    // 当检测到任何一个频段（不管是低音重击还是高频人声爆发）释放出强节奏（大于 0.40），立刻以电光石火般的速度将目标色切为黄色 (1.0)
-    // 否则（在中低能量段）立刻回弹恢复为温柔的青色 (0.0)。将变色直接与音乐节奏的“瞬态脉冲”形成绝对物理绑定！
-    const pulseThreshold = 0.40;
-    const targetProgress = musicEnergy > pulseThreshold ? 1.0 : 0.0;
+    // 瞬态节拍检测与状态翻转器 (Beat State-Flip Trigger)：
+    // 通过对比当前帧能量与上一帧的差分增量 (Delta)，敏锐捕捉任何重拍、强拍击中或高频能量骤增的突发瞬间！
+    if (window.lastMusicEnergy === undefined) window.lastMusicEnergy = 0;
+    if (window.colorFlipState === undefined) window.colorFlipState = false; // 初始为青色 (false)
+    if (window.lastFlipTime === undefined) window.lastFlipTime = 0;
+    
+    const now = Date.now();
+    const energyDelta = musicEnergy - window.lastMusicEnergy;
+    
+    // 增量大于 0.085 判定为强拍/骤变击中，并增设 220ms 的科学冷静期 (规避无序高频乱闪，使其高级感倍增，高度契合节拍)
+    if (energyDelta > 0.085 && (now - window.lastFlipTime) > 220) {
+      window.colorFlipState = !window.colorFlipState; // 颜色状态彻底翻转！
+      window.lastFlipTime = now;
+    }
+    window.lastMusicEnergy = musicEnergy; // 迭代保存当前能量
+    
+    // 根据状态机决定变色目标值：黄色 (1.0) 还是青色 (0.0)
+    const targetProgress = window.colorFlipState ? 1.0 : 0.0;
     
     if (window.dualColorBreatheProgress === undefined) {
       window.dualColorBreatheProgress = 0;
     }
     
-    // 采用超敏捷、非对称极速跟手阻尼器：
-    // 上升段 (变黄)：采用 38.0 的惊人速度在 1 帧内秒切，做到与鼓点和高音的爆发 0 延迟绝对联觉！
-    // 下降段 (回弹青色)：采用 16.0 的速度干脆利落地拉回，确保节奏既有爆炸般的强烈对比，又保留了一丝呼吸的高端韵律。
-    const easeSpeed = targetProgress > window.dualColorBreatheProgress ? 38.0 : 16.0;
-    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * easeSpeed);
+    // 敏捷跟手阻尼器：令每一次状态翻转都以 20.0 的优秀物理速度在青与黄之间丝滑又果断地过渡切换
+    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 20.0);
     
     const activeColor = interpolateColor(
       colors[0], // 青色
