@@ -58,6 +58,9 @@ const effects = [
   { id: "spark", name: "星点闪烁", desc: "短点随机感跳动，适合消息" },
   { id: "warning", name: "分区告警", desc: "高对比断续闪烁，用于重要提醒" },
   { id: "battery", name: "电量波", desc: "低到高逐步铺满，再保持" },
+  { id: "dual-color-breathe", name: "双色呼吸", desc: "双种纯色渐进呼吸交替切换" },
+  { id: "tri-color-breathe", name: "三色呼吸", desc: "三种纯色渐进呼吸交替切换" },
+  { id: "quad-color-breathe", name: "四色呼吸", desc: "四种纯色渐进呼吸交替切换" },
 ];
 
 const musicEffects = [
