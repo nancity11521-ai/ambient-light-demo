@@ -182,6 +182,22 @@ let musicFlowOffset = 0;
 let rotateVelocity = 0;
 let musicBreathePhase = 0; // JS-driven color transition phase for music breathing
 
+// 实时鼓点色彩律动专有变量 (Beat-Triggered Color Rhythm States)
+let currentBreatheColorIdx = 0;
+let prevBreatheColor = "#33e6c5";
+let targetBreatheColor = "#33e6c5";
+let colorTransitionProgress = 1.0;
+let lastBeatTime = 0;
+
+function interpolateColor(color1, color2, factor) {
+  const c1 = hexToRgb(color1);
+  const c2 = hexToRgb(color2);
+  const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+  const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+  const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 function getBreatheStats(phase, numColors) {
   let color = "#33e6c5";
   let opacity = 0;
@@ -1078,16 +1094,49 @@ function analyzeAudioFrame() {
 
   if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
     let numColors = 2;
-    if (effectId.includes("tri")) numColors = 3;
-    if (effectId.includes("quad")) numColors = 4;
+    let colors = ["#33e6c5", "#ff6d7a"];
+    if (effectId.includes("tri")) {
+      numColors = 3;
+      colors = ["#33e6c5", "#a855f7", "#ffd45f"];
+    }
+    if (effectId.includes("quad")) {
+      numColors = 4;
+      colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
+    }
 
-    const { color, opacity: breatheOpacity } = getBreatheStats(musicBreathePhase, numColors);
-    
-    // Real-time brightness tracks average audio energy dynamically!
-    const finalOpacity = breatheOpacity * (0.12 + energy * 0.88);
+    const now = performance.now();
 
-    root.style.setProperty("--music-breathe-color", color);
-    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+    // Auto-initialize if colors changed or empty
+    if (!colors.includes(prevBreatheColor)) {
+      currentBreatheColorIdx = 0;
+      prevBreatheColor = colors[0];
+      targetBreatheColor = colors[0];
+      colorTransitionProgress = 1.0;
+    }
+
+    // Trigger color index advancement on drum hit with a 380ms rhythm debouncer
+    if (isBeat && (now - lastBeatTime > 380)) {
+      const prevIdx = currentBreatheColorIdx;
+      currentBreatheColorIdx = (prevIdx + 1) % numColors;
+      prevBreatheColor = colors[prevIdx];
+      targetBreatheColor = colors[currentBreatheColorIdx];
+      colorTransitionProgress = 0.0;
+      lastBeatTime = now;
+    }
+
+    // Smoothly morph color over 0.35 seconds
+    colorTransitionProgress = Math.min(1.0, colorTransitionProgress + dt / 0.35);
+    const activeColor = interpolateColor(
+      prevBreatheColor,
+      targetBreatheColor,
+      colorTransitionProgress
+    );
+
+    // Make light intensity dynamically clamp and pulse with real-time audio volume
+    const beatVolume = 0.12 + bassEnergy * 0.88;
+
+    root.style.setProperty("--music-breathe-color", activeColor);
+    root.style.setProperty("--music-breathe-opacity", beatVolume.toFixed(3));
   }
 
   // Handle effect-specific active JS-driven effects

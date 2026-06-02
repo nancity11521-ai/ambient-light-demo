@@ -1652,6 +1652,14 @@ h1 {
   opacity: calc(var(--intensity) * var(--music-breathe-opacity));
   stroke-width: calc(14px * var(--music-scale));
 }
+.mode-music-dual-color-breathe .preview-glow,
+.mode-music-tri-color-breathe .preview-glow,
+.mode-music-quad-color-breathe .preview-glow {
+  stroke: var(--music-breathe-color);
+  stroke-dasharray: var(--path-length) 0;
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.22);
+  stroke-width: calc(26px * var(--music-scale));
+}
 /* 哪怕在 .is-rainbow 状态下，双色、三色、四色呼吸也要强制以多色呼吸层为主渲染，隐藏多余的彩虹流光层 */
 .is-rainbow.mode-music-dual-color-breathe .rainbow-flow-layer path,
 .is-rainbow.mode-music-tri-color-breathe .rainbow-flow-layer path,
