@@ -649,7 +649,7 @@ function resolveAudioUrl(value) {
 
   if (neteaseId) {
     return {
-      url: `https://music.163.com/song/media/outer/url?id=${neteaseId}.mp3`,
+      url: `https://met.api.xiaoguan.fit/api?server=netease&type=url&id=${neteaseId}`,
       label: `已识别网易云歌曲 ID：${neteaseId}，播放后开始律动`,
       crossOrigin: "anonymous",
     };
