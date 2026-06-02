@@ -1124,38 +1124,29 @@ function analyzeAudioFrame() {
     const rhythmStrength = energy * 0.4 + bassEnergy * 0.6;
     const dynamicOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
 
-    if (numColors === 2) {
-      // 2色律动呼吸：参考非音乐“双色呼吸”的物理渐暗呼吸形态
-      // 周期为 2.0 秒（每个颜色占据 1.0 秒），支持速度滑块与音乐节奏微调
-      musicBreathePhase = ((musicBreathePhase || 0) + (dt * userSpeed) / 2.0) % 1.0;
-      const { color, opacity: breatheOpacity } = getBreatheStats(musicBreathePhase, 2);
-      
-      activeColor = color;
-      // 在变色时完全暗下去，而在呼吸亮起时，其峰值高度跟随音乐律动强弱起伏
-      finalOpacity = breatheOpacity * dynamicOpacity;
-    } else {
-      // 3色与4色律动呼吸：保持原来的平滑切换逻辑（一直有颜色在，每秒自动切换）
-      musicBreatheTimer += dt * userSpeed;
-      const targetInterval = 1.0;
+    // 2色模式下变色周期调慢为每 2.0 秒一切换，提供更优雅悠闲的视觉频率；3/4色保持每 1.0 秒一切换
+    const targetInterval = numColors === 2 ? 2.0 : 1.0;
 
-      if (musicBreatheTimer >= targetInterval) {
-        musicBreatheTimer = musicBreatheTimer % targetInterval;
-        const prevIdx = currentBreatheColorIdx;
-        currentBreatheColorIdx = (prevIdx + 1) % numColors;
-        prevBreatheColor = colors[prevIdx];
-        targetBreatheColor = colors[currentBreatheColorIdx];
-      }
-
-      const blendDuration = 0.4;
-      const progress = Math.min(1.0, musicBreatheTimer / blendDuration);
-      activeColor = interpolateColor(
-        prevBreatheColor,
-        targetBreatheColor,
-        progress
-      );
-      
-      finalOpacity = dynamicOpacity;
+    musicBreatheTimer += dt * userSpeed;
+    if (musicBreatheTimer >= targetInterval) {
+      musicBreatheTimer = musicBreatheTimer % targetInterval;
+      const prevIdx = currentBreatheColorIdx;
+      currentBreatheColorIdx = (prevIdx + 1) % numColors;
+      prevBreatheColor = colors[prevIdx];
+      targetBreatheColor = colors[currentBreatheColorIdx];
     }
+
+    // 2色渐变混合过渡期为更平滑的 0.6 秒，3/4色过渡期为 0.4 秒
+    const blendDuration = numColors === 2 ? 0.6 : 0.4;
+    const progress = Math.min(1.0, musicBreatheTimer / blendDuration);
+    activeColor = interpolateColor(
+      prevBreatheColor,
+      targetBreatheColor,
+      progress
+    );
+    
+    // 2色灯效在此与3/4色统一：完全跟随音乐的律动（在呼吸亮起时，其能量强弱起伏 100% 同步），且一直有颜色在（不落入全暗）
+    finalOpacity = dynamicOpacity;
 
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
