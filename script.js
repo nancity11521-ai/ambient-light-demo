@@ -1094,13 +1094,44 @@ function analyzeAudioFrame() {
   const breatheCycleSpeed = userSpeed * (0.09 + bassEnergy * 0.22);
   musicBreathePhase = ((musicBreathePhase || 0) + breatheCycleSpeed * dt) % 1.0;
 
-  if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
-    let numColors = 2;
-    let colors = ["#33e6c5", "#ffd45f"];
-    if (effectId.includes("tri")) {
-      numColors = 3;
-      colors = ["#33e6c5", "#a855f7", "#ffd45f"];
+  if (effectId === "music-dual-color-breathe") {
+    const colors = ["#33e6c5", "#ffd45f"]; // 青色和黄色
+    
+    // 捕获当前的节奏强度 (结合音量与低音)
+    const rhythmStrength = Math.min(1.0, Math.max(0.0, energy * 0.4 + bassEnergy * 0.6));
+    
+    // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 确保一直有颜色在)
+    const minOpacity = 0.35;
+    const maxOpacity = 0.98;
+    const finalOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
+    
+    // 再高一些就换个颜色：当节奏能量超过 0.48 时，开始平滑变色为黄色
+    let targetColorProgress = 0;
+    if (rhythmStrength > 0.48) {
+      targetColorProgress = Math.min(1.0, (rhythmStrength - 0.48) / 0.27);
     }
+    
+    // 使用全局 window 变量以实现跨帧之间的阻尼平滑，保证色彩变幻极其丝滑
+    if (window.dualColorBreatheProgress === undefined) {
+      window.dualColorBreatheProgress = 0;
+    }
+    
+    // 渐进插值更新 (easeSpeed = 12.0)
+    window.dualColorBreatheProgress += (targetColorProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 12.0);
+    
+    const activeColor = interpolateColor(
+      colors[0], // 青色
+      colors[1], // 黄色
+      window.dualColorBreatheProgress
+    );
+    
+    root.style.setProperty("--music-breathe-color", activeColor);
+    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+    
+  } else if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
+    // 3色和4色律动效果保持原有的定时过渡逻辑不变
+    let numColors = 3;
+    let colors = ["#33e6c5", "#a855f7", "#ffd45f"];
     if (effectId.includes("quad")) {
       numColors = 4;
       colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
@@ -1115,17 +1146,13 @@ function analyzeAudioFrame() {
       musicBreathePhase = 0;
     }
 
-    let activeColor = colors[0];
-    let finalOpacity = 0.35;
-
-    // Make light intensity dynamically couple with music energy (bass hits & overall volume)
+    // Make light intensity dynamically couple with music energy
     const minOpacity = 0.35;
     const maxOpacity = 0.98;
     const rhythmStrength = energy * 0.4 + bassEnergy * 0.6;
     const dynamicOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
 
-    // 2色模式下变色周期调慢为每 2.0 秒一切换，提供更优雅悠闲的视觉频率；3/4色保持每 1.0 秒一切换
-    const targetInterval = numColors === 2 ? 2.0 : 1.0;
+    const targetInterval = 1.0; // 3/4色保持每 1.0 秒一切换
 
     musicBreatheTimer += dt * userSpeed;
     if (musicBreatheTimer >= targetInterval) {
@@ -1136,17 +1163,15 @@ function analyzeAudioFrame() {
       targetBreatheColor = colors[currentBreatheColorIdx];
     }
 
-    // 2色渐变混合过渡期为更平滑的 0.6 秒，3/4色过渡期为 0.4 秒
-    const blendDuration = numColors === 2 ? 0.6 : 0.4;
+    const blendDuration = 0.4;
     const progress = Math.min(1.0, musicBreatheTimer / blendDuration);
-    activeColor = interpolateColor(
+    const activeColor = interpolateColor(
       prevBreatheColor,
       targetBreatheColor,
       progress
     );
     
-    // 2色灯效在此与3/4色统一：完全跟随音乐的律动（在呼吸亮起时，其能量强弱起伏 100% 同步），且一直有颜色在（不落入全暗）
-    finalOpacity = dynamicOpacity;
+    const finalOpacity = dynamicOpacity;
 
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
