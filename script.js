@@ -1111,18 +1111,18 @@ function analyzeAudioFrame() {
     if (window.colorPendulumPos === undefined) window.colorPendulumPos = 0.0; // 范围 [0.0, 1.0]，代表青到黄的比重
     if (window.colorPendulumVel === undefined) window.colorPendulumVel = 0.0; // 物理移动速度
     
-    // 1. 低音能量强力向「黄色 (1.0)」拉扯摆锤
-    const yellowForce = bassEnergy * bassEnergy * 48.0;
+    // 1. 低音能量强力向「黄色 (1.0)」拉扯摆锤 (优化为一次方线性响应，极低能也能极其敏捷地拉扯)
+    const yellowForce = bassEnergy * 56.0;
     
     // 2. 高音能量强力向「青色 (0.0)」拉扯摆锤
-    const cyanForce = trebleEnergy * trebleEnergy * 38.0;
+    const cyanForce = trebleEnergy * 46.0;
     
     // 3. 中音能量产生随机的微幅物理颤噪，让变色细节更加充盈高级
     const nowTime = Date.now();
     const jitterForce = Math.sin(nowTime * 0.05) * midEnergy * 8.0;
     
-    // 4. 自适应弹性回复力：无声时摆锤优雅回归青色底色偏青端 (0.08)
-    const springForce = (0.08 - window.colorPendulumPos) * 15.0;
+    // 4. 自适应回复力：无声时摆锤优雅回归青色底色 (下调系数至 2.5，彻底解放拉扯力，告别吸附卡死)
+    const springForce = (0.08 - window.colorPendulumPos) * 2.5;
     
     // 5. 阻尼摩擦粘滞力 (平抑高频突变，阻尼维持高质感的液体流畅顺滑感)
     const frictionForce = -window.colorPendulumVel * 9.0;
@@ -1135,13 +1135,16 @@ function analyzeAudioFrame() {
     window.colorPendulumVel += totalForce * clampedDt;
     window.colorPendulumPos += window.colorPendulumVel * clampedDt;
     
-    // 物理边界撞墙反弹与截断
+    // ========================================================
+    // 🏓 物理边界「弹性碰撞反弹机制」 (Elastic Boundary Bounce)
+    // 彻底根除传统物理引擎撞墙后速度归零导致的“长时间停留一色”的粘滞卡死现象！
+    // ========================================================
     if (window.colorPendulumPos <= 0.0) {
       window.colorPendulumPos = 0.0;
-      window.colorPendulumVel = 0.0;
+      window.colorPendulumVel = -window.colorPendulumVel * 0.52; // 52% 动能弹性反弹，撞墙后瞬间优雅弹回
     } else if (window.colorPendulumPos >= 1.0) {
       window.colorPendulumPos = 1.0;
-      window.colorPendulumVel = 0.0;
+      window.colorPendulumVel = -window.colorPendulumVel * 0.52; // 52% 动能弹性反弹，撞击黄色极限后瞬间弹回
     }
     
     // 使用摆锤当前物理位置插值出最终的变色渲染方案
