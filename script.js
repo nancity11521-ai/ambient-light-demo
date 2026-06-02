@@ -1106,8 +1106,8 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 殿堂级「多频段自适应简谐振荡加相位跃迁闪切引擎」
-    // 用永恒流转的波动作为根基，彻底根除任何物理能量持续锁死在单一颜色的粘滞弊端！
+    // 🌊 殿堂级「多频段自适应简谐振荡加相位跃迁闪切引擎」 (黄金重置版)
+    // 基础是悠闲、优雅的呼吸大潮 (低频慢速)，骨架是只在大重拍上卡点瞬闪的克制闪切，告别高频闪烁！
     // ========================================================
     if (window.colorOscillationPhase === undefined) {
       window.colorOscillationPhase = 0.0;
@@ -1119,17 +1119,18 @@ function analyzeAudioFrame() {
       window.lastOscillationFlipTime = 0;
     }
     
-    // 1. 波动速率受高音与低音的整体能量强力调制
-    // 静止无声时每 5.5s 缓慢走完一个循环；音乐高能时每秒飞速切换 2.5 次！
-    const phaseSpeed = userSpeed * (1.15 + musicEnergy * 11.5);
+    // 1. 大幅下调基础波动速率：静止无声时每 28.5s 流转一圈；即使高潮高能时，自动流转一圈也极为优雅从容 (约 5.8s)
+    const phaseSpeed = userSpeed * (0.22 + musicEnergy * 0.88);
     window.colorOscillationPhase += phaseSpeed * dt;
     
-    // 2. 捕捉瞬态差分重拍 (Delta > 0.052，包含 160ms 冷静锁卡点)
+    // 2. 差分重拍检测器：将门槛调高至 0.095 过滤锁碎噪声，只捕获主鼓点或高频爆发
     const nowTime = Date.now();
     const energyDelta = musicEnergy - window.lastOscillationEnergy;
-    if (energyDelta > 0.052 && (nowTime - window.lastOscillationFlipTime) > 160) {
-      // 强力注入一个 122 度 (Math.PI * 0.68) 的相位跃迁！瞬间将色相强行推移，造成超明显的“卡点闪切”！
-      window.colorOscillationPhase += Math.PI * 0.68;
+    
+    // 科学加宽冷静期至 380ms (对应完美卡点单音/大鼓点，杜绝一拍内多闪，画面沉稳极具律动高级感)
+    if (energyDelta > 0.095 && (nowTime - window.lastOscillationFlipTime) > 380) {
+      // 瞬态注入一个清爽痛快的 90 度 (Math.PI * 0.5) 相位突变，令颜色卡拍瞬切！
+      window.colorOscillationPhase += Math.PI * 0.5;
       window.lastOscillationFlipTime = nowTime;
     }
     window.lastOscillationEnergy = musicEnergy; // 迭代保存当前能量
@@ -1141,7 +1142,7 @@ function analyzeAudioFrame() {
     const sineProgress = (Math.sin(window.colorOscillationPhase) + 1.0) / 2.0;
     
     // 3. 超陡峭变色插值 (Sharp Hermite Step)：在 0.38 到 0.62 的区间内极速完成切换
-    // 保证大部分时间要么呈完美纯青，要么呈完美纯黄，而中间的流转一闪而过，界限极度明显爽快！
+    // 保证大部分时间呈完美纯青或纯黄，而中间的流转一闪而过，界限分明
     let sharpProgress = 0;
     if (sineProgress < 0.38) {
       sharpProgress = 0.0; // 纯青色稳定期
@@ -1160,14 +1161,81 @@ function analyzeAudioFrame() {
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
     
-  } else if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
-    // 3色和4色律动效果保持原有的定时过渡逻辑不变
-    let numColors = 3;
-    let colors = ["#33e6c5", "#a855f7", "#ffd45f"];
-    if (effectId.includes("quad")) {
-      numColors = 4;
-      colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
+  } else if (effectId === "music-tri-color-breathe") {
+    const colors = ["#33e6c5", "#ffd45f", "#36e67f"]; // 青色、黄色、绿色
+    
+    // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 保证一直有颜色在)
+    const minOpacity = 0.35;
+    const maxOpacity = 0.98;
+    const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
+    
+    // ========================================================
+    // 🌊 殿堂级「三频段三色自适应简谐振荡加相位跃迁闪切引擎」 (黄金重置版)
+    // 用永恒流转的三相圆周波动作为根基，保证在青、黄、绿之间优雅周而复始地流转！
+    // 基础同样是优雅、缓慢的呼吸大潮，骨架是只在大重拍上卡点瞬闪的克制闪切，告别高频闪烁！
+    // ========================================================
+    if (window.triColorOscillationPhase === undefined) {
+      window.triColorOscillationPhase = 0.0;
     }
+    if (window.lastTriOscillationEnergy === undefined) {
+      window.lastTriOscillationEnergy = 0.0;
+    }
+    if (window.lastTriOscillationFlipTime === undefined) {
+      window.lastTriOscillationFlipTime = 0;
+    }
+    
+    // 1. 基础波动速率：静止无声时每 28.5s 流转一圈；即使高潮高能时，自动流转一圈也极为优雅从容 (约 5.8s)
+    const phaseSpeed = userSpeed * (0.22 + musicEnergy * 0.88);
+    window.triColorOscillationPhase += phaseSpeed * dt;
+    
+    // 2. 差分重拍检测器：将门槛调高至 0.095 过滤锁碎噪声，只捕获主鼓点或高频爆发
+    const nowTime = Date.now();
+    const energyDelta = musicEnergy - window.lastTriOscillationEnergy;
+    
+    // 科学加宽冷静期至 380ms (对应完美卡点单音/大鼓点，杜绝一拍内多闪，画面沉稳极具律动高级感)
+    if (energyDelta > 0.095 && (nowTime - window.lastTriOscillationFlipTime) > 380) {
+      // 强力注入一个 120 度 (Math.PI * 2.0 / 3.0) 的相位跃迁！瞬间将色相在三色中强行推移，造成超明显的“卡点闪切”！
+      window.triColorOscillationPhase += (Math.PI * 2.0) / 3.0;
+      window.lastTriOscillationFlipTime = nowTime;
+    }
+    window.lastTriOscillationEnergy = musicEnergy; // 迭代保存当前能量
+    
+    // 保证相位周期在 [0, 2*Math.PI] 范围内
+    window.triColorOscillationPhase = window.triColorOscillationPhase % (Math.PI * 2.0);
+    
+    // 将 2*Math.PI 映射到 3.0 的三色索引分布空间上
+    const normPhase = (window.triColorOscillationPhase / (Math.PI * 2.0)) * 3.0; // 范围 [0.0, 3.0]
+    const baseIdx = Math.floor(normPhase) % 3;
+    const nextIdx = (baseIdx + 1) % 3;
+    const phaseFraction = normPhase - Math.floor(normPhase); // 两个主色之间的百分比
+    
+    // 3. 超陡峭变色插值 (Sharp Hermite Step)：在 0.38 到 0.62 的区间内极速完成切换
+    // 保证大部分时间呈现完美纯色，而中间的流转一闪而过，界限极度明显爽快！
+    let sharpFraction = 0.0;
+    if (phaseFraction < 0.38) {
+      sharpFraction = 0.0; // 停留在此纯色稳定期
+    } else if (phaseFraction > 0.62) {
+      sharpFraction = 1.0; // 停留在此纯色稳定期
+    } else {
+      sharpFraction = (phaseFraction - 0.38) / 0.24; // 极速秒切过渡
+    }
+    
+    const activeColor = interpolateColor(
+      colors[baseIdx],
+      colors[nextIdx],
+      sharpFraction
+    );
+    
+    root.style.setProperty("--music-breathe-color", activeColor);
+    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+    
+  } else if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
+    // 4色声效保持原先时钟过渡逻辑
+    let numColors = 4;
+    let colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
 
     // Auto-initialize if colors changed or empty
     if (!colors.includes(prevBreatheColor) || !colors.includes(targetBreatheColor)) {
@@ -1184,7 +1252,7 @@ function analyzeAudioFrame() {
     const rhythmStrength = energy * 0.4 + bassEnergy * 0.6;
     const dynamicOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
 
-    const targetInterval = 1.0; // 3/4色保持每 1.0 秒一切换
+    const targetInterval = 1.0; // 4色保持每 1.0 秒一切换
 
     musicBreatheTimer += dt * userSpeed;
     if (musicBreatheTimer >= targetInterval) {
