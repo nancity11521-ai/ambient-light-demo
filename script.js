@@ -1721,7 +1721,14 @@ function setupControls() {
   audioPlayer.addEventListener("pause", () => {
     cancelAnimationFrame(audioFrameId);
     applyEffectiveSpeed(userSpeed);
-    audioStatus.textContent = "已暂停音乐律动";
+    
+    if (currentEffect.id.startsWith("music-")) {
+      // 兼容性与高级质感优化：在音乐暂停时，自动平滑切入虚拟声浪律动模式，避免画面死板卡死在某一帧
+      lastFrameTime = performance.now();
+      analyzeAudioFrame();
+    } else {
+      audioStatus.textContent = "已暂停音乐律动";
+    }
   });
   recordAnimation.addEventListener("click", recordPreviewAnimation);
   downloadSnapshot.addEventListener("click", downloadSnapshotFile);
