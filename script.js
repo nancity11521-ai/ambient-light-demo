@@ -1097,27 +1097,28 @@ function analyzeAudioFrame() {
   if (effectId === "music-dual-color-breathe") {
     const colors = ["#33e6c5", "#ffd45f"]; // 青色和黄色
     
-    // 捕获当前的节奏强度 (结合音量与低音)
-    const rhythmStrength = Math.min(1.0, Math.max(0.0, energy * 0.4 + bassEnergy * 0.6));
+    // 捕获当前的节奏强度 (结合音量与低音，微调权重提升整体灵敏度)
+    const rhythmStrength = Math.min(1.0, Math.max(0.0, energy * 0.45 + bassEnergy * 0.55));
     
     // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 确保一直有颜色在)
     const minOpacity = 0.35;
     const maxOpacity = 0.98;
     const finalOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
     
-    // 再高一些就换个颜色：当节奏能量超过 0.48 时，开始平滑变色为黄色
+    // 降低换色门槛，收窄过渡区，让颜色的切换对比更猛烈、更分明！
+    // 能量阈值下调至 0.36 (越过 0.36 即可开始向黄色闪切)，在 0.36 到 0.48 之间极速完成 100% 的变色过渡
     let targetColorProgress = 0;
-    if (rhythmStrength > 0.48) {
-      targetColorProgress = Math.min(1.0, (rhythmStrength - 0.48) / 0.27);
+    if (rhythmStrength > 0.36) {
+      targetColorProgress = Math.min(1.0, (rhythmStrength - 0.36) / 0.12);
     }
     
-    // 使用全局 window 变量以实现跨帧之间的阻尼平滑，保证色彩变幻极其丝滑
+    // 使用全局 window 变量实现阻尼平滑，保证过渡流畅
     if (window.dualColorBreatheProgress === undefined) {
       window.dualColorBreatheProgress = 0;
     }
     
-    // 渐进插值更新 (easeSpeed = 12.0)
-    window.dualColorBreatheProgress += (targetColorProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 12.0);
+    // 将变色跟手敏捷度从 12.0 提高到 28.0，令颜色切换干脆利落、极富节奏爆裂感！
+    window.dualColorBreatheProgress += (targetColorProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 28.0);
     
     const activeColor = interpolateColor(
       colors[0], // 青色
