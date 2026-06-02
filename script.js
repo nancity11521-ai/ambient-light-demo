@@ -1097,33 +1097,43 @@ function analyzeAudioFrame() {
   if (effectId === "music-dual-color-breathe") {
     const colors = ["#33e6c5", "#ffd45f"]; // 青色和黄色
     
-    // 捕获当前的节奏强度 (结合音量与低音，微调权重提升整体灵敏度)
-    const rhythmStrength = Math.min(1.0, Math.max(0.0, energy * 0.45 + bassEnergy * 0.55));
+    // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声/管弦乐均能极其敏锐地感知！
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
-    // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 确保一直有颜色在)
+    // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 保证一直有颜色在)
     const minOpacity = 0.35;
     const maxOpacity = 0.98;
-    const finalOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
+    const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
-    // 降低换色门槛，收窄过渡区，让颜色的切换对比更猛烈、更分明！
-    // 能量阈值下调至 0.36 (越过 0.36 即可开始向黄色闪切)，在 0.36 到 0.48 之间极速完成 100% 的变色过渡
-    let targetColorProgress = 0;
-    if (rhythmStrength > 0.36) {
-      targetColorProgress = Math.min(1.0, (rhythmStrength - 0.36) / 0.12);
+    // 联合相位驱动器：让变色流转的速率实时受高音与低音能量的共同加持推动！
+    // 即使歌曲全篇都是纯高音或纯低音，只要节奏在流转，变色相位就会持续平滑推进，绝不卡死！
+    const phaseSpeed = userSpeed * (0.32 + musicEnergy * 1.48);
+    
+    if (window.dualColorPhase === undefined) {
+      window.dualColorPhase = 0;
+    }
+    window.dualColorPhase = (window.dualColorPhase + phaseSpeed * dt) % 2.0; // 双色循环周期定为 2.0
+    
+    // 将周期 [0, 2.0] 折返映射到 [0, 1.0] 以实现往复无缝衔接
+    let currentProgress = window.dualColorPhase;
+    if (currentProgress > 1.0) {
+      currentProgress = 2.0 - currentProgress;
     }
     
-    // 使用全局 window 变量实现阻尼平滑，保证过渡流畅
-    if (window.dualColorBreatheProgress === undefined) {
-      window.dualColorBreatheProgress = 0;
+    // 超陡峭变色插值 (Sharp S-Curve)：在 0.42 到 0.58 的极窄区间完成 0% 到 100% 切换，实现两色瞬切、界限极分明！
+    let sharpProgress = 0;
+    if (currentProgress < 0.42) {
+      sharpProgress = 0; // 纯青色稳定期
+    } else if (currentProgress > 0.58) {
+      sharpProgress = 1.0; // 纯黄色稳定期
+    } else {
+      sharpProgress = (currentProgress - 0.42) / 0.16; // 中间极速秒切
     }
-    
-    // 将变色跟手敏捷度从 12.0 提高到 28.0，令颜色切换干脆利落、极富节奏爆裂感！
-    window.dualColorBreatheProgress += (targetColorProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 28.0);
     
     const activeColor = interpolateColor(
       colors[0], // 青色
       colors[1], // 黄色
-      window.dualColorBreatheProgress
+      sharpProgress
     );
     
     root.style.setProperty("--music-breathe-color", activeColor);
