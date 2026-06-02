@@ -380,19 +380,6 @@
         </div>
 
         <div class="panel" id="musicPanel" data-panel="music">
-          <!-- 音乐播放与控制指示模块 (放在最上方) -->
-          <div class="import-card" style="margin-top: 0; margin-bottom: 16px;">
-            <div class="section-heading" style="margin-bottom: 10px;">
-              <span>Player & Control</span>
-              <output id="audioStatus">上传音乐后，可在列表中随时切换并播放律动</output>
-            </div>
-            <audio id="audioPlayer" controls></audio>
-            <label class="file-trigger" style="margin-top: 10px; min-height: 52px; padding: 6px;">
-              <span>点击上传音乐文件 (.mp3 / .wav)</span>
-              <input id="audioInput" type="file" accept="audio/*" multiple />
-            </label>
-          </div>
-
           <!-- 律动动效模式选择 -->
           <div class="section-heading">
             <span>Rhythm Modes</span>
@@ -409,6 +396,19 @@
             <span></span>
             <span></span>
             <span></span>
+          </div>
+
+          <!-- 音乐播放与控制指示模块 (放在律动选项的下方) -->
+          <div class="import-card" style="margin-top: 0; margin-bottom: 16px;">
+            <div class="section-heading" style="margin-bottom: 10px;">
+              <span>Player & Control</span>
+              <output id="audioStatus">上传音乐后，可在列表中随时切换并播放律动</output>
+            </div>
+            <audio id="audioPlayer" controls></audio>
+            <label class="file-trigger" style="margin-top: 10px; min-height: 52px; padding: 6px;">
+              <span>点击上传音乐文件 (.mp3 / .wav)</span>
+              <input id="audioInput" type="file" accept="audio/*" multiple />
+            </label>
           </div>
 
           <!-- 音乐列表库 -->

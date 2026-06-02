@@ -1393,65 +1393,65 @@ h1 {
   animation: customPulse calc(0.92s / (var(--speed) * var(--custom-tempo))) ease-in-out infinite;
 }
 
-.mode-music-ref-breathe .preview-light {
-  stroke: url("#rainbowStroke");
-  stroke-dasharray: var(--path-length) 0;
-  animation: refBreath calc(3.4s / var(--speed)) ease-in-out infinite;
-}
-
-.mode-music-ref-pulse .preview-light {
-  stroke: #23f0cf;
-  stroke-dasharray: var(--path-length) 0;
-  animation: refPulse calc(1.08s / var(--speed)) cubic-bezier(0.2, 0.85, 0.2, 1) infinite;
-}
-
+/* 1. 脉冲律动 (Pulse Rhythm) */
 .mode-music-ref-pulse-rhythm .preview-light {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--path-length) 0;
-  animation: refPulseRhythm calc(1.25s / var(--speed)) ease-in-out infinite;
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(10px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
+}
+.is-rainbow.mode-music-ref-pulse-rhythm .rainbow-flow-layer path {
+  display: block;
+  stroke-dasharray: var(--path-length) 0;
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(10px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 
+/* 2. 流光律动 (Flow Rhythm) */
 .mode-music-ref-flow .preview-light {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
-  animation: dashTravel calc(2.05s / var(--speed)) linear infinite;
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(11px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
+}
+.is-rainbow.mode-music-ref-flow .rainbow-flow-layer path {
+  display: block;
+  stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(11px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 
+/* 3. 涟漪律动 (Ripple Rhythm) */
 .mode-music-ref-ripple .preview-light,
 .mode-music-ref-ripple .preview-light-alt {
   stroke: #1da8ff;
-  opacity: var(--intensity);
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
-  animation: refRipple calc(1.85s / var(--speed)) ease-in-out infinite;
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(10px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
-
 .mode-music-ref-ripple .preview-light-alt {
   stroke: #36e6ff;
-  animation-name: refRippleAlt;
-  animation-delay: calc(-0.9s / var(--speed));
+  stroke-dashoffset: calc(var(--music-flow-offset) * 0.65); /* different offset speed */
+  opacity: calc(var(--intensity) * var(--music-intensity) * 0.72);
+  stroke-width: calc(8px * var(--music-scale));
+  filter: drop-shadow(0 0 calc(var(--music-glow) * 0.8) #36e6ff);
 }
-
-.is-rainbow.mode-music-ref-breathe .rainbow-flow-layer path,
-.is-rainbow.mode-music-ref-pulse-rhythm .rainbow-flow-layer path {
-  stroke-dasharray: var(--path-length) 0;
-  animation: refPulseRhythm calc(1.25s / var(--speed)) ease-in-out infinite;
-}
-
-.is-rainbow.mode-music-ref-pulse .rainbow-flow-layer path {
-  stroke: #23f0cf;
-  stroke-dasharray: var(--path-length) 0;
-  animation: refPulse calc(1.08s / var(--speed)) cubic-bezier(0.2, 0.85, 0.2, 1) infinite;
-}
-
-.is-rainbow.mode-music-ref-flow .rainbow-flow-layer path {
-  stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
-  animation: dashTravel calc(2.05s / var(--speed)) linear infinite;
-}
-
 .is-rainbow.mode-music-ref-ripple .rainbow-flow-layer path {
+  display: block;
   stroke: #1da8ff;
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
-  animation: refRipple calc(1.85s / var(--speed)) ease-in-out infinite;
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-intensity));
+  stroke-width: calc(10px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
 
 /* --- 新增音乐律动效果的 CSS 规则 --- */

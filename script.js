@@ -61,8 +61,6 @@ const effects = [
 ];
 
 const musicEffects = [
-  { id: "music-ref-breathe", name: "参考呼吸", desc: "整圈彩色渐变慢慢亮灭" },
-  { id: "music-ref-pulse", name: "参考脉冲", desc: "整圈青色按节拍闪亮" },
   { id: "music-ref-pulse-rhythm", name: "脉冲律动", desc: "整圈彩色随节拍脉冲" },
   { id: "music-ref-flow", name: "流光律动", desc: "彩色光段沿环形滑动" },
   { id: "music-ref-ripple", name: "涟漪律动", desc: "局部蓝色波纹扩散" },
