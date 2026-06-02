@@ -972,8 +972,12 @@ function startAudioAnalysis() {
     audioContext.resume();
     cancelAnimationFrame(audioFrameId);
     analyzeAudioFrame();
-  } catch {
-    audioStatus.textContent = "当前音乐无法读取频谱，请换用允许跨域访问的音频直链";
+  } catch (err) {
+    // 兼容性保护：若由于移动端安全策略或跨域限制导致 Web Audio 初始化失败，强制安全降级为虚拟声浪律动，避免效果断流卡死！
+    console.warn("AudioContext initialization failed, falling back to virtual simulator:", err);
+    audioStatus.textContent = "当前环境受限，已自动开启超感仿真声浪律动";
+    cancelAnimationFrame(audioFrameId);
+    analyzeAudioFrame();
   }
 }
 
