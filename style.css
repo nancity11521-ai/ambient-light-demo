@@ -1402,14 +1402,29 @@ h1 {
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #33e6c5) drop-shadow(0 0 28px rgba(51, 230, 197, 0.55));
   }
-  18% {
+  13% {
     stroke: #33e6c5;
   }
-  25% {
+  20% {
+    stroke: #33e6c5;
     opacity: 0;
-    filter: none; /* Completely black / dark gap */
+    filter: none;
   }
-  32% {
+  21%, 29% {
+    opacity: 0;
+    filter: none; /* Completely black / dark gap flat hold */
+  }
+  25% {
+    stroke: #ff6d7a;
+    opacity: 0;
+    filter: none;
+  }
+  30% {
+    stroke: #ff6d7a;
+    opacity: 0;
+    filter: none;
+  }
+  37% {
     stroke: #ff6d7a;
   }
   50% {
@@ -1417,14 +1432,29 @@ h1 {
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #ff6d7a) drop-shadow(0 0 28px rgba(255, 109, 122, 0.55));
   }
-  68% {
+  63% {
     stroke: #ff6d7a;
   }
-  75% {
+  70% {
+    stroke: #ff6d7a;
     opacity: 0;
-    filter: none; /* Completely black / dark gap */
+    filter: none;
   }
-  82% {
+  71%, 79% {
+    opacity: 0;
+    filter: none; /* Completely black / dark gap flat hold */
+  }
+  75% {
+    stroke: #33e6c5;
+    opacity: 0;
+    filter: none;
+  }
+  80% {
+    stroke: #33e6c5;
+    opacity: 0;
+    filter: none;
+  }
+  87% {
     stroke: #33e6c5;
   }
 }
@@ -1435,44 +1465,92 @@ h1 {
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #33e6c5) drop-shadow(0 0 28px rgba(51, 230, 197, 0.55));
   }
-  10% {
+  8% {
     stroke: #33e6c5;
   }
-  16% {
-    opacity: 0;
-    filter: none; /* Completely dark */
+  12% {
+    stroke: #33e6c5;
   }
-  22% {
+  19% {
+    stroke: #33e6c5;
+    opacity: 0;
+    filter: none;
+  }
+  20%, 26% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
+  }
+  23% {
+    stroke: #a855f7;
+    opacity: 0;
+    filter: none;
+  }
+  27% {
+    stroke: #a855f7;
+    opacity: 0;
+    filter: none;
+  }
+  34% {
     stroke: #a855f7;
   }
-  33% {
+  41% {
     stroke: #a855f7;
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 28px rgba(168, 85, 247, 0.55));
   }
-  43% {
+  45% {
     stroke: #a855f7;
   }
-  50% {
+  52% {
+    stroke: #a855f7;
     opacity: 0;
-    filter: none; /* Completely dark */
+    filter: none;
+  }
+  53%, 59% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
   }
   56% {
     stroke: #ffd45f;
+    opacity: 0;
+    filter: none;
   }
-  66% {
+  60% {
+    stroke: #ffd45f;
+    opacity: 0;
+    filter: none;
+  }
+  67% {
+    stroke: #ffd45f;
+  }
+  74% {
     stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #ffd45f) drop-shadow(0 0 28px rgba(255, 212, 95, 0.55));
   }
-  76% {
+  78% {
     stroke: #ffd45f;
   }
-  83% {
+  85% {
+    stroke: #ffd45f;
     opacity: 0;
-    filter: none; /* Completely dark */
+    filter: none;
+  }
+  86%, 92% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
   }
   89% {
+    stroke: #33e6c5;
+    opacity: 0;
+    filter: none;
+  }
+  93% {
+    stroke: #33e6c5;
+    opacity: 0;
+    filter: none;
+  }
+  97% {
     stroke: #33e6c5;
   }
 }
@@ -1483,59 +1561,122 @@ h1 {
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #7cf26d) drop-shadow(0 0 28px rgba(124, 242, 109, 0.55));
   }
-  8% {
+  6% {
     stroke: #7cf26d;
   }
-  12.5% {
-    opacity: 0;
-    filter: none; /* Completely dark */
+  9% {
+    stroke: #7cf26d;
   }
-  16.5% {
+  15% {
+    stroke: #7cf26d;
+    opacity: 0;
+    filter: none;
+  }
+  16%, 20% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
+  }
+  18% {
+    stroke: #61a8ff;
+    opacity: 0;
+    filter: none;
+  }
+  21% {
+    stroke: #61a8ff;
+    opacity: 0;
+    filter: none;
+  }
+  27% {
     stroke: #61a8ff;
   }
-  25% {
+  31% {
     stroke: #61a8ff;
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #61a8ff) drop-shadow(0 0 28px rgba(97, 168, 255, 0.55));
   }
-  33.5% {
+  34% {
     stroke: #61a8ff;
   }
-  37.5% {
+  40% {
+    stroke: #61a8ff;
     opacity: 0;
-    filter: none; /* Completely dark */
+    filter: none;
   }
-  41.5% {
+  41%, 45% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
+  }
+  43% {
+    stroke: #f43f5e;
+    opacity: 0;
+    filter: none;
+  }
+  46% {
+    stroke: #f43f5e;
+    opacity: 0;
+    filter: none;
+  }
+  52% {
     stroke: #f43f5e;
   }
-  50% {
+  56% {
     stroke: #f43f5e;
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #f43f5e) drop-shadow(0 0 28px rgba(244, 63, 94, 0.55));
   }
-  58.5% {
+  59% {
     stroke: #f43f5e;
   }
-  62.5% {
+  65% {
+    stroke: #f43f5e;
     opacity: 0;
-    filter: none; /* Completely dark */
+    filter: none;
   }
-  66.5% {
+  66%, 70% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
+  }
+  68% {
+    stroke: #ffd45f;
+    opacity: 0;
+    filter: none;
+  }
+  71% {
+    stroke: #ffd45f;
+    opacity: 0;
+    filter: none;
+  }
+  77% {
     stroke: #ffd45f;
   }
-  75% {
+  81% {
     stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
     filter: drop-shadow(0 0 10px #ffd45f) drop-shadow(0 0 28px rgba(255, 212, 95, 0.55));
   }
-  83.5% {
+  84% {
     stroke: #ffd45f;
   }
-  87.5% {
+  90% {
+    stroke: #ffd45f;
     opacity: 0;
-    filter: none; /* Completely dark */
+    filter: none;
   }
-  91.5% {
+  91%, 95% {
+    opacity: 0;
+    filter: none; /* Completely dark gap hold */
+  }
+  93% {
+    stroke: #7cf26d;
+    opacity: 0;
+    filter: none;
+  }
+  96% {
+    stroke: #7cf26d;
+    opacity: 0;
+    filter: none;
+  }
+  98% {
     stroke: #7cf26d;
   }
 }
