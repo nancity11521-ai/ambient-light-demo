@@ -1167,10 +1167,12 @@ function analyzeAudioFrame() {
     // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
-    // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 保证一直有颜色在)
-    const minOpacity = 0.35;
-    const maxOpacity = 0.98;
-    const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
+    // 升级为非线性高动态明暗对比度曲线：稍微增加明暗变化，暗部更深邃(0.26)，亮部更璀璨(1.0)
+    // 配合 1.25 次幂 Gamma 变换，小能量下有温润优雅的深呼吸感，重拍爆发时对比度更强烈！
+    const minOpacity = 0.26;
+    const maxOpacity = 1.0;
+    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
     // 🌊 殿堂级「色彩能量共鸣引擎」 (全新色彩情绪张力版)
