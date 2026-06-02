@@ -1680,6 +1680,15 @@ h1 {
   98% {
     stroke: #7cf26d;
   }
+/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
+.mode-music-dual-color-breathe .preview-light,
+.mode-music-tri-color-breathe .preview-light,
+.mode-music-quad-color-breathe .preview-light {
+  stroke: var(--music-breathe-color);
+  stroke-dasharray: var(--path-length) 0;
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  stroke-width: calc(14px * var(--music-scale));
+  filter: drop-shadow(0 0 var(--music-glow) var(--music-breathe-color));
 }
 
 /* 1. 脉冲律动 (Pulse Rhythm) */

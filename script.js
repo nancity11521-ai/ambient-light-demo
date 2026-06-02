@@ -71,6 +71,9 @@ const musicEffects = [
   { id: "music-fireworks", name: "节奏花火", desc: "低音重击时随机绽放闪烁星点" },
   { id: "music-rainbow-rotate", name: "炫彩旋转", desc: "渐变色彩随节奏快速旋转" },
   { id: "music-strobe-alert", name: "狂热闪烁", desc: "高能电音闪烁，适合派对氛围" },
+  { id: "music-dual-color-breathe", name: "双色律动呼吸", desc: "双色呼吸跟随音乐节奏和亮度律动" },
+  { id: "music-tri-color-breathe", name: "三色律动呼吸", desc: "三色呼吸跟随音乐节奏和亮度律动" },
+  { id: "music-quad-color-breathe", name: "四色律动呼吸", desc: "四色呼吸跟随音乐节奏和亮度律动" },
 ];
 
 const scenarios = [
@@ -177,6 +180,92 @@ let lastFrameTime = 0;
 let musicRotationAngle = 0;
 let musicFlowOffset = 0;
 let rotateVelocity = 0;
+let musicBreathePhase = 0; // JS-driven color transition phase for music breathing
+
+function getBreatheStats(phase, numColors) {
+  let color = "#33e6c5";
+  let opacity = 0;
+  
+  if (numColors === 2) {
+    const colors = ["#33e6c5", "#ff6d7a"];
+    if (phase < 0.5) {
+      if (phase < 0.15) {
+        color = colors[0];
+        opacity = phase / 0.15;
+      } else if (phase >= 0.15 && phase < 0.20) {
+        color = colors[0];
+        opacity = 1;
+      } else if (phase >= 0.20 && phase < 0.35) {
+        color = colors[0];
+        opacity = 1 - (phase - 0.20) / 0.15;
+      } else {
+        opacity = 0;
+        color = phase < 0.42 ? colors[0] : colors[1];
+      }
+    } else {
+      const p = phase - 0.5;
+      if (p < 0.15) {
+        color = colors[1];
+        opacity = p / 0.15;
+      } else if (p >= 0.15 && p < 0.20) {
+        color = colors[1];
+        opacity = 1;
+      } else if (p >= 0.20 && p < 0.35) {
+        color = colors[1];
+        opacity = 1 - (p - 0.20) / 0.15;
+      } else {
+        opacity = 0;
+        color = p < 0.42 ? colors[1] : colors[0];
+      }
+    }
+  } else if (numColors === 3) {
+    const colors = ["#33e6c5", "#a855f7", "#ffd45f"];
+    const segment = 1 / 3;
+    const colorIdx = Math.floor(phase / segment);
+    const p = phase % segment;
+    
+    const nextColor = colors[(colorIdx + 1) % 3];
+    const currColor = colors[colorIdx];
+    
+    if (p < 0.08) {
+      color = currColor;
+      opacity = p / 0.08;
+    } else if (p >= 0.08 && p < 0.12) {
+      color = currColor;
+      opacity = 1;
+    } else if (p >= 0.12 && p < 0.20) {
+      color = currColor;
+      opacity = 1 - (p - 0.12) / 0.08;
+    } else {
+      opacity = 0;
+      color = p < 0.26 ? currColor : nextColor;
+    }
+  } else if (numColors === 4) {
+    const colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
+    const segment = 0.25;
+    const colorIdx = Math.floor(phase / segment);
+    const p = phase % segment;
+    
+    const nextColor = colors[(colorIdx + 1) % 4];
+    const currColor = colors[colorIdx];
+    
+    if (p < 0.07) {
+      color = currColor;
+      opacity = p / 0.07;
+    } else if (p >= 0.07 && p < 0.10) {
+      color = currColor;
+      opacity = 1;
+    } else if (p >= 0.10 && p < 0.17) {
+      color = currColor;
+      opacity = 1 - (p - 0.10) / 0.07;
+    } else {
+      opacity = 0;
+      color = p < 0.21 ? currColor : nextColor;
+    }
+  }
+  
+  return { color, opacity };
+}
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -944,8 +1033,27 @@ function analyzeAudioFrame() {
   }
   root.style.setProperty("--music-flow-offset", musicFlowOffset.toFixed(1));
 
-  // Handle effect-specific active JS-driven effects
   const effectId = currentEffect.id;
+
+  // 3. Music Breathe Phase: cycle rate adapts continuously to music speed & bass hits!
+  const breatheCycleSpeed = userSpeed * (0.09 + bassEnergy * 0.22);
+  musicBreathePhase = ((musicBreathePhase || 0) + breatheCycleSpeed * dt) % 1.0;
+
+  if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
+    let numColors = 2;
+    if (effectId.includes("tri")) numColors = 3;
+    if (effectId.includes("quad")) numColors = 4;
+
+    const { color, opacity: breatheOpacity } = getBreatheStats(musicBreathePhase, numColors);
+    
+    // Real-time brightness tracks average audio energy dynamically!
+    const finalOpacity = breatheOpacity * (0.12 + energy * 0.88);
+
+    root.style.setProperty("--music-breathe-color", color);
+    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+  }
+
+  // Handle effect-specific active JS-driven effects
   if (effectId === "music-spectrum-wave") {
     // Spectrum Wave: LED bulbs scale and flash dramatically on frequency channels!
     const totalLeds = ledConfig.groups * ledConfig.perGroup;
