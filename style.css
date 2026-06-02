@@ -1646,23 +1646,46 @@ h1 {
 }/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
 .mode-music-dual-color-breathe .preview-light,
 .mode-music-tri-color-breathe .preview-light,
-.mode-music-quad-color-breathe .preview-light {
-  stroke: var(--music-breathe-color);
+.mode-music-quad-color-breathe .preview-light,
+.is-rainbow.mode-music-dual-color-breathe .preview-light,
+.is-rainbow.mode-music-tri-color-breathe .preview-light,
+.is-rainbow.mode-music-quad-color-breathe .preview-light {
+  stroke: var(--music-breathe-color) !important;
   stroke-dasharray: var(--path-length) 0;
-  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity)) !important;
   stroke-width: calc(14px * var(--music-scale));
   transition: none !important;
 }
 .mode-music-dual-color-breathe .preview-glow,
 .mode-music-tri-color-breathe .preview-glow,
-.mode-music-quad-color-breathe .preview-glow {
-  stroke: var(--music-breathe-color);
+.mode-music-quad-color-breathe .preview-glow,
+.is-rainbow.mode-music-dual-color-breathe .preview-glow,
+.is-rainbow.mode-music-tri-color-breathe .preview-glow,
+.is-rainbow.mode-music-quad-color-breathe .preview-glow {
+  stroke: var(--music-breathe-color) !important;
   stroke-dasharray: var(--path-length) 0;
-  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.22);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.22) !important;
   stroke-width: calc(26px * var(--music-scale));
   transition: none !important;
 }
+
+/* 彻底杜绝 .is-rainbow 对非音乐双色、三色、四色呼吸效果的覆盖，恢复完整纯色渲染与正常不透明度 */
+.is-rainbow.mode-dual-color-breathe .preview-light,
+.is-rainbow.mode-tri-color-breathe .preview-light,
+.is-rainbow.mode-quad-color-breathe .preview-light {
+  opacity: calc(var(--intensity) * 0.95) !important;
+}
+.is-rainbow.mode-dual-color-breathe .preview-glow,
+.is-rainbow.mode-tri-color-breathe .preview-glow,
+.is-rainbow.mode-quad-color-breathe .preview-glow {
+  stroke: rgb(var(--light-rgb)) !important;
+  opacity: calc(var(--intensity) * 0.22) !important;
+}
+
 /* 哪怕在 .is-rainbow 状态下，双色、三色、四色呼吸也要强制以多色呼吸层为主渲染，隐藏多余的彩虹流光层 */
+.is-rainbow.mode-dual-color-breathe .rainbow-flow-layer path,
+.is-rainbow.mode-tri-color-breathe .rainbow-flow-layer path,
+.is-rainbow.mode-quad-color-breathe .rainbow-flow-layer path,
 .is-rainbow.mode-music-dual-color-breathe .rainbow-flow-layer path,
 .is-rainbow.mode-music-tri-color-breathe .rainbow-flow-layer path,
 .is-rainbow.mode-music-quad-color-breathe .rainbow-flow-layer path {
