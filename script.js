@@ -1173,61 +1173,50 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 殿堂级「三频段三色自适应简谐振荡加相位跃迁闪切引擎」 (黄金重置版)
-    // 用永恒流转的三相圆周波动作为根基，保证在青、黄、绿之间优雅周而复始地流转！
-    // 基础同样是优雅、缓慢的呼吸大潮，骨架是只在大重拍上卡点瞬闪的克制闪切，告别高频闪烁！
+    // 🌊 能量随动物理阻尼切换引擎 (全新3色流体律动版)
+    // 根据音乐实时能量强度，动态在青、黄、绿三色间流动：
+    // - 低能量 (<= 0.32): 稳定在纯青色 (#33e6c5)
+    // - 中能量 (0.32 ~ 0.65): 优雅在青色与黄色 (#ffd45f) 之间平滑流转
+    // - 巅峰高能量 (> 0.65): 强力冲刺到黄色与绿色 (#36e67f) 的高潮区间
+    // 引入阻尼平滑算法，确保色彩转换呈现完全的流体阻尼感，无任何高频晃眼或突变闪烁！
     // ========================================================
-    if (window.triColorOscillationPhase === undefined) {
-      window.triColorOscillationPhase = 0.0;
-    }
-    if (window.lastTriOscillationEnergy === undefined) {
-      window.lastTriOscillationEnergy = 0.0;
-    }
-    if (window.lastTriOscillationFlipTime === undefined) {
-      window.lastTriOscillationFlipTime = 0;
+    if (window.triColorProgress === undefined) {
+      window.triColorProgress = 0.0;
     }
     
-    // 1. 基础波动速率：静止无声时每 28.5s 流转一圈；即使高潮高能时，自动流转一圈也极为优雅从容 (约 5.8s)
-    const phaseSpeed = userSpeed * (0.22 + musicEnergy * 0.88);
-    window.triColorOscillationPhase += phaseSpeed * dt;
-    
-    // 2. 差分重拍检测器：将门槛调高至 0.095 过滤锁碎噪声，只捕获主鼓点或高频爆发
-    const nowTime = Date.now();
-    const energyDelta = musicEnergy - window.lastTriOscillationEnergy;
-    
-    // 科学加宽冷静期至 380ms (对应完美卡点单音/大鼓点，杜绝一拍内多闪，画面沉稳极具律动高级感)
-    if (energyDelta > 0.095 && (nowTime - window.lastTriOscillationFlipTime) > 380) {
-      // 强力注入一个 120 度 (Math.PI * 2.0 / 3.0) 的相位跃迁！瞬间将色相在三色中强行推移，造成超明显的“卡点闪切”！
-      window.triColorOscillationPhase += (Math.PI * 2.0) / 3.0;
-      window.lastTriOscillationFlipTime = nowTime;
-    }
-    window.lastTriOscillationEnergy = musicEnergy; // 迭代保存当前能量
-    
-    // 保证相位周期在 [0, 2*Math.PI] 范围内
-    window.triColorOscillationPhase = window.triColorOscillationPhase % (Math.PI * 2.0);
-    
-    // 将 2*Math.PI 映射到 3.0 的三色索引分布空间上
-    const normPhase = (window.triColorOscillationPhase / (Math.PI * 2.0)) * 3.0; // 范围 [0.0, 3.0]
-    const baseIdx = Math.floor(normPhase) % 3;
-    const nextIdx = (baseIdx + 1) % 3;
-    const phaseFraction = normPhase - Math.floor(normPhase); // 两个主色之间的百分比
-    
-    // 3. 超陡峭变色插值 (Sharp Hermite Step)：在 0.38 到 0.62 的区间内极速完成切换
-    // 保证大部分时间呈现完美纯色，而中间的流转一闪而过，界限极度明显爽快！
-    let sharpFraction = 0.0;
-    if (phaseFraction < 0.38) {
-      sharpFraction = 0.0; // 停留在此纯色稳定期
-    } else if (phaseFraction > 0.62) {
-      sharpFraction = 1.0; // 停留在此纯色稳定期
+    // 映射音乐能量到目标进度区间 [0.0, 2.0]
+    let targetProgress = 0.0;
+    if (musicEnergy <= 0.32) {
+      targetProgress = 0.0; // 锁定在纯青色
+    } else if (musicEnergy <= 0.65) {
+      // 0.32 ~ 0.65 映射至 0.0 ~ 1.0 (青 -> 黄)
+      targetProgress = (musicEnergy - 0.32) / 0.33;
     } else {
-      sharpFraction = (phaseFraction - 0.38) / 0.24; // 极速秒切过渡
+      // 0.65 ~ 1.0 映射至 1.0 ~ 2.0 (黄 -> 绿)
+      targetProgress = 1.0 + Math.min(1.0, (musicEnergy - 0.65) / 0.35);
     }
     
-    const activeColor = interpolateColor(
-      colors[baseIdx],
-      colors[nextIdx],
-      sharpFraction
-    );
+    // 物理阻尼平滑更新：阻尼系数 9.5 兼顾瞬态反应与优雅流体感
+    window.triColorProgress += (targetProgress - window.triColorProgress) * Math.min(1.0, dt * 9.5);
+    
+    // 限制边界
+    window.triColorProgress = Math.max(0.0, Math.min(2.0, window.triColorProgress));
+    
+    // 双线性颜色插值
+    let activeColor = colors[0];
+    if (window.triColorProgress < 1.0) {
+      activeColor = interpolateColor(
+        colors[0],
+        colors[1],
+        window.triColorProgress
+      );
+    } else {
+      activeColor = interpolateColor(
+        colors[1],
+        colors[2],
+        window.triColorProgress - 1.0
+      );
+    }
     
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
