@@ -1097,7 +1097,7 @@ function analyzeAudioFrame() {
   if (effectId === "music-dual-color-breathe") {
     const colors = ["#33e6c5", "#ffd45f"]; // 青色和黄色
     
-    // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声/管弦乐均能极其敏锐地感知！
+    // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
     // 能到低就暗一些，稍微高一点就亮一些 (不低于 0.35 保证一直有颜色在)
@@ -1105,35 +1105,26 @@ function analyzeAudioFrame() {
     const maxOpacity = 0.98;
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
-    // 联合相位驱动器：让变色流转的速率实时受高音与低音能量的共同加持推动！
-    // 即使歌曲全篇都是纯高音或纯低音，只要节奏在流转，变色相位就会持续平滑推进，绝不卡死！
-    const phaseSpeed = userSpeed * (0.32 + musicEnergy * 1.48);
+    // 动态多频段联合瞬态脉冲切换器：
+    // 当检测到任何一个频段（不管是低音重击还是高频人声爆发）释放出强节奏（大于 0.40），立刻以电光石火般的速度将目标色切为黄色 (1.0)
+    // 否则（在中低能量段）立刻回弹恢复为温柔的青色 (0.0)。将变色直接与音乐节奏的“瞬态脉冲”形成绝对物理绑定！
+    const pulseThreshold = 0.40;
+    const targetProgress = musicEnergy > pulseThreshold ? 1.0 : 0.0;
     
-    if (window.dualColorPhase === undefined) {
-      window.dualColorPhase = 0;
-    }
-    window.dualColorPhase = (window.dualColorPhase + phaseSpeed * dt) % 2.0; // 双色循环周期定为 2.0
-    
-    // 将周期 [0, 2.0] 折返映射到 [0, 1.0] 以实现往复无缝衔接
-    let currentProgress = window.dualColorPhase;
-    if (currentProgress > 1.0) {
-      currentProgress = 2.0 - currentProgress;
+    if (window.dualColorBreatheProgress === undefined) {
+      window.dualColorBreatheProgress = 0;
     }
     
-    // 超陡峭变色插值 (Sharp S-Curve)：在 0.42 到 0.58 的极窄区间完成 0% 到 100% 切换，实现两色瞬切、界限极分明！
-    let sharpProgress = 0;
-    if (currentProgress < 0.42) {
-      sharpProgress = 0; // 纯青色稳定期
-    } else if (currentProgress > 0.58) {
-      sharpProgress = 1.0; // 纯黄色稳定期
-    } else {
-      sharpProgress = (currentProgress - 0.42) / 0.16; // 中间极速秒切
-    }
+    // 采用超敏捷、非对称极速跟手阻尼器：
+    // 上升段 (变黄)：采用 38.0 的惊人速度在 1 帧内秒切，做到与鼓点和高音的爆发 0 延迟绝对联觉！
+    // 下降段 (回弹青色)：采用 16.0 的速度干脆利落地拉回，确保节奏既有爆炸般的强烈对比，又保留了一丝呼吸的高端韵律。
+    const easeSpeed = targetProgress > window.dualColorBreatheProgress ? 38.0 : 16.0;
+    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * easeSpeed);
     
     const activeColor = interpolateColor(
       colors[0], // 青色
       colors[1], // 黄色
-      sharpProgress
+      window.dualColorBreatheProgress
     );
     
     root.style.setProperty("--music-breathe-color", activeColor);
