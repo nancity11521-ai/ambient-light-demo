@@ -173,6 +173,7 @@ let userSpeed = Number(speedSlider.value) || 1;
 let lastFrameTime = 0;
 let musicRotationAngle = 0;
 let musicFlowOffset = 0;
+let rotateVelocity = 0;
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -889,44 +890,61 @@ function analyzeAudioFrame() {
   const mid = frequencyData.slice(12, 60).reduce((total, value) => total + value, 0) / 48;
   const treble = frequencyData.slice(60, 120).reduce((total, value) => total + value, 0) / 60;
   
-  const energy = Math.min(1, average / 150);
-  const bassEnergy = Math.min(1, bass / 180);
-  const midEnergy = Math.min(1, mid / 150);
-  const trebleEnergy = Math.min(1, treble / 120);
+  const energy = Math.min(1, average / 140);
+  const bassEnergy = Math.min(1, bass / 160);
+  const midEnergy = Math.min(1, mid / 140);
+  const trebleEnergy = Math.min(1, treble / 110);
 
-  // Set real-time rhythm variables inside CSS (stroke width, opacity, glow etc.)
-  root.style.setProperty("--music-intensity", (0.2 + energy * 0.8).toFixed(2));
-  root.style.setProperty("--music-scale", (0.8 + bassEnergy * 0.45).toFixed(2));
-  root.style.setProperty("--music-glow", (4 + bassEnergy * 18).toFixed(1) + "px");
-  root.style.setProperty("--custom-tempo", (0.9 + energy * 1.6).toFixed(2));
+  // Define dynamic beat thresholding (Bass Beat detection!)
+  const isBeat = bassEnergy > 0.62;
   
-  // Calculate strobe variable (for flash/alert effect)
-  const strobe = energy > 0.58 ? 1.0 : 0.08;
+  // Real-time variables optimized for extreme high-fidelity responsiveness!
+  // Opacity: drops lower in quiet parts (0.08) and hits full bright on energy peaks (1.0)
+  const dynamicIntensity = 0.08 + energy * 0.92;
+  root.style.setProperty("--music-intensity", dynamicIntensity.toFixed(2));
+  
+  // Scale / Width: grows thicker and expands when bass hits!
+  const dynamicScale = 0.78 + bassEnergy * 0.68; // Expands up to ~1.46x size!
+  root.style.setProperty("--music-scale", dynamicScale.toFixed(2));
+  
+  // Glow: expands dramatically on beats!
+  const dynamicGlow = (3 + bassEnergy * 28).toFixed(1) + "px";
+  root.style.setProperty("--music-glow", dynamicGlow);
+  
+  // Strobe: flash bright exactly on beat, stay dark otherwise
+  const strobe = isBeat ? 1.0 : 0.05;
   root.style.setProperty("--music-strobe", strobe.toFixed(2));
 
-  // Base speed factor scales manually with userSpeed and dynamically with bass
-  const speedMultiplier = userSpeed * (0.65 + bassEnergy * 0.9);
-  
-  // Calculate frame delta time
+  // Frame timing
   const now = performance.now();
   const dt = lastFrameTime ? (now - lastFrameTime) / 1000 : 0.016;
   lastFrameTime = now;
 
-  // Accumulate JS rotation and flow offset seamlessly (completely smooth manual speed slider!)
-  musicRotationAngle = (musicRotationAngle || 0) + speedMultiplier * 90 * dt; // 90deg per sec base
+  // --- JS-Driven Rhythm Motion Integration ---
+  
+  // 1. Rainbow Rotate Spin Kick: Spins fast on beats, decays smoothly!
+  if (isBeat) {
+    rotateVelocity += bassEnergy * 240 * dt; // Boost rotation speed on drum hits!
+  }
+  rotateVelocity *= Math.pow(0.88, 60 * dt); // Apply friction decay
+  const baseRotateSpeed = userSpeed * 35;
+  const activeRotateSpeed = baseRotateSpeed + rotateVelocity;
+  musicRotationAngle = (musicRotationAngle || 0) + activeRotateSpeed * dt;
   root.style.setProperty("--music-rotation", `${musicRotationAngle.toFixed(1)}deg`);
 
+  // 2. Music Flow offset: moves and pulses with music tempo & bass hits
+  const speedMultiplier = userSpeed * (0.55 + bassEnergy * 1.15);
   const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
-  musicFlowOffset = (musicFlowOffset || 0) - speedMultiplier * 160 * dt; // 160px per sec base
+  musicFlowOffset = (musicFlowOffset || 0) - speedMultiplier * 160 * dt;
   if (Math.abs(musicFlowOffset) > pathLength) {
     musicFlowOffset = musicFlowOffset % pathLength;
   }
   root.style.setProperty("--music-flow-offset", musicFlowOffset.toFixed(1));
 
-  // Effect-specific active JS-driven effects
+  // Handle effect-specific active JS-driven effects
   const effectId = currentEffect.id;
   if (effectId === "music-spectrum-wave") {
-    // Dynamically scale/color individual LEDs based on different frequency bands!
+    // Spectrum Wave: LED bulbs scale and flash dramatically on frequency channels!
     const totalLeds = ledConfig.groups * ledConfig.perGroup;
     const leds = ledLayer.querySelectorAll("circle");
     leds.forEach((led, idx) => {
@@ -941,13 +959,32 @@ function analyzeAudioFrame() {
       }
       
       const isStart = led.classList.contains("is-start");
-      led.style.fill = isStart ? `rgb(255, ${Math.round(200 + activeVal * 55)}, 120)` : `rgb(${Math.round(51 + activeVal * 204)}, ${Math.round(230 + activeVal * 25)}, ${Math.round(197 - activeVal * 100)})`;
-      led.style.opacity = (0.25 + activeVal * 0.75).toFixed(2);
-      led.style.r = (2.8 + activeVal * 1.5).toFixed(1);
+      // Color shifts: bass yields red-ish glow, mid yields green-cyan, treble yields blue-violet!
+      let r = 51, g = 230, b = 197;
+      if (ledPercent < 0.25) {
+        // Bass: Red-Orange
+        r = Math.round(200 + activeVal * 55);
+        g = Math.round(50 + activeVal * 80);
+        b = Math.round(50 - activeVal * 30);
+      } else if (ledPercent < 0.75) {
+        // Mid: Green-Cyan
+        r = Math.round(51 - activeVal * 20);
+        g = Math.round(230 + activeVal * 25);
+        b = Math.round(150 + activeVal * 47);
+      } else {
+        // Treble: Blue-Purple
+        r = Math.round(100 + activeVal * 80);
+        g = Math.round(100 - activeVal * 80);
+        b = Math.round(230 + activeVal * 25);
+      }
+      
+      led.style.fill = isStart ? `rgb(255, 235, 150)` : `rgb(${r}, ${g}, ${b})`;
+      led.style.opacity = (0.15 + activeVal * 0.85).toFixed(2);
+      led.style.r = (2.5 + activeVal * 2.5).toFixed(1); // Bulb scales up to 5px on hits!
     });
   } else if (effectId === "music-fireworks") {
-    // Bass hit triggers fireworks bursts along the light path!
-    if (bassEnergy > 0.65 && Math.random() < 0.15) {
+    // Spark burst triggers exactly on drum hits!
+    if (isBeat && Math.random() < 0.22) {
       triggerSparkBurst(pathLength);
     }
   }
