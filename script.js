@@ -1114,8 +1114,8 @@ function analyzeAudioFrame() {
     const now = Date.now();
     const energyDelta = musicEnergy - window.lastMusicEnergy;
     
-    // 增量大于 0.085 判定为强拍/骤变击中，并增设 220ms 的科学冷静期 (规避无序高频乱闪，使其高级感倍增，高度契合节拍)
-    if (energyDelta > 0.085 && (now - window.lastFlipTime) > 220) {
+    // 黄金调校：降低触发门槛至 0.055 捕捉中等节拍，收窄冷却期至 165ms 契合密集音轨，使色彩变化更频繁、更动感，同时严守防闪眼的高级感底线
+    if (energyDelta > 0.055 && (now - window.lastFlipTime) > 165) {
       window.colorFlipState = !window.colorFlipState; // 颜色状态彻底翻转！
       window.lastFlipTime = now;
     }
@@ -1128,8 +1128,8 @@ function analyzeAudioFrame() {
       window.dualColorBreatheProgress = 0;
     }
     
-    // 敏捷跟手阻尼器：令每一次状态翻转都以 20.0 的优秀物理速度在青与黄之间丝滑又果断地过渡切换
-    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 20.0);
+    // 敏捷跟手阻尼器：将物理过渡速度提升至 24.0，使色彩切换更轻快有弹性，契合更密集的节拍变幻
+    window.dualColorBreatheProgress += (targetProgress - window.dualColorBreatheProgress) * Math.min(1.0, dt * 24.0);
     
     const activeColor = interpolateColor(
       colors[0], // 青色
