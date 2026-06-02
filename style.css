@@ -39,6 +39,14 @@
   --offset-ref-ripple-start: -342;
   --offset-ref-ripple-alt-start: -450;
   --offset-ref-ripple-alt-end: -1008;
+  --music-intensity: 0.72;
+  --music-scale: 1.0;
+  --music-glow: 12px;
+  --music-strobe: 0.05;
+  --music-rotation: 0deg;
+  --music-flow-offset: 0;
+  --music-breathe-color: #33e6c5;
+  --music-breathe-opacity: 0.72;
   color-scheme: dark;
 }
 

@@ -973,6 +973,13 @@ function startAudioAnalysis() {
 
 function analyzeAudioFrame() {
   if (!analyser || audioPlayer.paused) {
+    // 音乐未播放或暂停时，平滑维持一套高质感预览的基准值，保证所有律动灯带优雅常亮，拒绝全黑
+    root.style.setProperty("--music-intensity", "0.72");
+    root.style.setProperty("--music-scale", "1.0");
+    root.style.setProperty("--music-glow", "12px");
+    root.style.setProperty("--music-strobe", "0.05");
+    root.style.setProperty("--music-breathe-color", "#33e6c5");
+    root.style.setProperty("--music-breathe-opacity", "0.72");
     return;
   }
 
