@@ -234,10 +234,11 @@ h1 {
 
 .preview-track {
   fill: none;
-  stroke: rgba(239, 232, 210, 0.16);
+  stroke: #141513; /* Deep titanium black, matching the phone's backplate color closely but darker and pure */
   stroke-width: 16; /* Thicker track slot */
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.045)); /* Extremely subtle premium carved highlight */
 }
 
 .preview-glow,
