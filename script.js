@@ -1106,52 +1106,55 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🎭 殿堂级「双频段物理摆锤变色引擎」 (Physics Color Pendulum)
+    // 🌊 殿堂级「多频段自适应简谐振荡加相位跃迁闪切引擎」
+    // 用永恒流转的波动作为根基，彻底根除任何物理能量持续锁死在单一颜色的粘滞弊端！
     // ========================================================
-    if (window.colorPendulumPos === undefined) window.colorPendulumPos = 0.0; // 范围 [0.0, 1.0]，代表青到黄的比重
-    if (window.colorPendulumVel === undefined) window.colorPendulumVel = 0.0; // 物理移动速度
-    
-    // 1. 低音能量强力向「黄色 (1.0)」拉扯摆锤 (优化为一次方线性响应，极低能也能极其敏捷地拉扯)
-    const yellowForce = bassEnergy * 56.0;
-    
-    // 2. 高音能量强力向「青色 (0.0)」拉扯摆锤
-    const cyanForce = trebleEnergy * 46.0;
-    
-    // 3. 中音能量产生随机的微幅物理颤噪，让变色细节更加充盈高级
-    const nowTime = Date.now();
-    const jitterForce = Math.sin(nowTime * 0.05) * midEnergy * 8.0;
-    
-    // 4. 自适应回复力：无声时摆锤优雅回归青色底色 (下调系数至 2.5，彻底解放拉扯力，告别吸附卡死)
-    const springForce = (0.08 - window.colorPendulumPos) * 2.5;
-    
-    // 5. 阻尼摩擦粘滞力 (平抑高频突变，阻尼维持高质感的液体流畅顺滑感)
-    const frictionForce = -window.colorPendulumVel * 9.0;
-    
-    // 6. Verlet 物理积分迭代
-    const totalForce = yellowForce - cyanForce + springForce + frictionForce + jitterForce;
-    
-    // 迭代物理状态，限制单步 dt 规避卡顿帧跳变
-    const clampedDt = Math.min(0.05, dt);
-    window.colorPendulumVel += totalForce * clampedDt;
-    window.colorPendulumPos += window.colorPendulumVel * clampedDt;
-    
-    // ========================================================
-    // 🏓 物理边界「弹性碰撞反弹机制」 (Elastic Boundary Bounce)
-    // 彻底根除传统物理引擎撞墙后速度归零导致的“长时间停留一色”的粘滞卡死现象！
-    // ========================================================
-    if (window.colorPendulumPos <= 0.0) {
-      window.colorPendulumPos = 0.0;
-      window.colorPendulumVel = -window.colorPendulumVel * 0.52; // 52% 动能弹性反弹，撞墙后瞬间优雅弹回
-    } else if (window.colorPendulumPos >= 1.0) {
-      window.colorPendulumPos = 1.0;
-      window.colorPendulumVel = -window.colorPendulumVel * 0.52; // 52% 动能弹性反弹，撞击黄色极限后瞬间弹回
+    if (window.colorOscillationPhase === undefined) {
+      window.colorOscillationPhase = 0.0;
+    }
+    if (window.lastOscillationEnergy === undefined) {
+      window.lastOscillationEnergy = 0.0;
+    }
+    if (window.lastOscillationFlipTime === undefined) {
+      window.lastOscillationFlipTime = 0;
     }
     
-    // 使用摆锤当前物理位置插值出最终的变色渲染方案
+    // 1. 波动速率受高音与低音的整体能量强力调制
+    // 静止无声时每 5.5s 缓慢走完一个循环；音乐高能时每秒飞速切换 2.5 次！
+    const phaseSpeed = userSpeed * (1.15 + musicEnergy * 11.5);
+    window.colorOscillationPhase += phaseSpeed * dt;
+    
+    // 2. 捕捉瞬态差分重拍 (Delta > 0.052，包含 160ms 冷静锁卡点)
+    const nowTime = Date.now();
+    const energyDelta = musicEnergy - window.lastOscillationEnergy;
+    if (energyDelta > 0.052 && (nowTime - window.lastOscillationFlipTime) > 160) {
+      // 强力注入一个 122 度 (Math.PI * 0.68) 的相位跃迁！瞬间将色相强行推移，造成超明显的“卡点闪切”！
+      window.colorOscillationPhase += Math.PI * 0.68;
+      window.lastOscillationFlipTime = nowTime;
+    }
+    window.lastOscillationEnergy = musicEnergy; // 迭代保存当前能量
+    
+    // 保证相位周期在 [0, 2*Math.PI] 范围内
+    window.colorOscillationPhase = window.colorOscillationPhase % (Math.PI * 2.0);
+    
+    // 将正弦值 [-1.0, 1.0] 归一化映射到 [0, 1.0] 的插值进度上
+    const sineProgress = (Math.sin(window.colorOscillationPhase) + 1.0) / 2.0;
+    
+    // 3. 超陡峭变色插值 (Sharp Hermite Step)：在 0.38 到 0.62 的区间内极速完成切换
+    // 保证大部分时间要么呈完美纯青，要么呈完美纯黄，而中间的流转一闪而过，界限极度明显爽快！
+    let sharpProgress = 0;
+    if (sineProgress < 0.38) {
+      sharpProgress = 0.0; // 纯青色稳定期
+    } else if (sineProgress > 0.62) {
+      sharpProgress = 1.0; // 纯黄色稳定期
+    } else {
+      sharpProgress = (sineProgress - 0.38) / 0.24; // 极速秒切过渡
+    }
+    
     const activeColor = interpolateColor(
       colors[0], // 青色
       colors[1], // 黄色
-      window.colorPendulumPos
+      sharpProgress
     );
     
     root.style.setProperty("--music-breathe-color", activeColor);
