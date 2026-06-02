@@ -641,6 +641,27 @@ function setupAudioFile(file) {
   setEffect("music-ref-flow");
 }
 
+function resolveAudioUrl(value) {
+  const parsed = new URL(value);
+  const neteaseId =
+    parsed.hostname.includes("music.163.com") &&
+    (parsed.searchParams.get("id") || new URLSearchParams(parsed.hash.split("?")[1] || "").get("id") || parsed.pathname.match(/\/song\/(\d+)/)?.[1]);
+
+  if (neteaseId) {
+    return {
+      url: `https://music.163.com/song/media/outer/url?id=${neteaseId}.mp3`,
+      label: `已识别网易云歌曲 ID：${neteaseId}，播放后开始律动`,
+      crossOrigin: "anonymous",
+    };
+  }
+
+  return {
+    url: parsed.href,
+    label: "在线音乐已载入，播放后开始律动；若无频谱变化，请确认音频地址允许跨域读取",
+    crossOrigin: parsed.protocol === "data:" ? "" : "anonymous",
+  };
+}
+
 function setupAudioUrl(rawUrl) {
   const value = rawUrl.trim();
 
@@ -650,26 +671,28 @@ function setupAudioUrl(rawUrl) {
     return;
   }
 
-  let url;
+  let resolved;
 
   try {
-    url = new URL(value);
+    resolved = resolveAudioUrl(value);
   } catch {
     audioStatus.textContent = "音乐地址格式不正确，请输入完整的音频链接";
     audioUrlInput.focus();
     return;
   }
 
-  if (!["http:", "https:", "data:"].includes(url.protocol)) {
+  const protocol = new URL(resolved.url).protocol;
+
+  if (!["http:", "https:", "data:"].includes(protocol)) {
     audioStatus.textContent = "仅支持 http、https 或 data 音频地址";
     return;
   }
 
   audioPlayer.pause();
-  audioPlayer.crossOrigin = url.protocol === "data:" ? "" : "anonymous";
-  audioPlayer.src = url.href;
+  audioPlayer.crossOrigin = resolved.crossOrigin;
+  audioPlayer.src = resolved.url;
   audioPlayer.load();
-  audioStatus.textContent = "在线音乐已载入，播放后开始律动；若无频谱变化，请确认音频地址允许跨域读取";
+  audioStatus.textContent = resolved.label;
   setEffect("music-ref-flow");
 }
 
