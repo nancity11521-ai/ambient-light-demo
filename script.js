@@ -549,18 +549,23 @@ function applyGeneratedEffect() {
 function updateSparks(length) {
   sparkLayer.innerHTML = "";
 
+  // 物理质感细节防斑点机制：这三个闪烁斑点只允许在“星点闪烁(spark)”模式下呈现，其他所有模式坚决清空，确保灯带极致 diffused 连续！
+  if (currentEffect.id !== "spark") {
+    return;
+  }
+
   if (!length) {
     return;
   }
 
-  const count = currentEffect.id.includes("music") ? 5 : 3;
+  const count = 3;
 
   for (let index = 0; index < count; index += 1) {
     const point = lightPath.getPointAtLength((length / count) * index);
     const spark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     spark.setAttribute("cx", point.x.toFixed(2));
     spark.setAttribute("cy", point.y.toFixed(2));
-    spark.setAttribute("r", currentEffect.id === "spark" ? "3.4" : "2.8");
+    spark.setAttribute("r", "3.4");
     spark.style.animation = `sparkDrift calc(${1.2 + index * 0.15}s / var(--speed)) ease-in-out infinite`;
     spark.style.animationDelay = `${index * 0.16}s`;
     sparkLayer.append(spark);
