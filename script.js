@@ -1173,35 +1173,44 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + musicEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 能量调制三色无缝流动引擎 (全新流体时间耦合版)
-    // 解决长时间停留在单一颜色的痛点，通过「时间流速 + 能量偏移」双驱动：
-    // - 即使完全静止或低能量下，基准色相也会以优雅速度在青、黄、绿之间缓慢流转 (绝不卡死)
-    // - 能量升高时，时间流速自动倍增，同时重拍会产生强烈的瞬态相移拉扯
-    // - 物理阻尼平滑计算，确保低中高频段下色彩均呈现完全自然的流体流动感
+    // 🌊 殿堂级「色彩能量共鸣引擎」 (全新色彩情绪张力版)
+    // 根据颜色控制和调节能量大小，而不是单纯地用明暗表达：
+    // - 能量低 (Low Energy): 色彩中心靠拢在宁静收敛的青色 (#33e6c5) 附近，
+    //   同时色彩波动带宽极窄 (0.35)，仅在青色微变区间进行静谧柔和的呼吸，用“冷、静、敛”表达低能。
+    // - 能量高 (High Energy): 色彩中心强力向极具张力的黄色与翠绿色 (#36e67f) 区间推移，
+    //   同时色彩波动带宽大幅撑开至宽幅 (1.50)，在黄-绿-青大对比色之间剧烈交替震荡，用“暖、耀、张”释放音浪！
+    // - 物理阻尼过滤，保证中心偏置与振幅带宽平滑无缝地液体级过渡。
     // ========================================================
     if (window.triColorBasePhase === undefined) {
       window.triColorBasePhase = 0.0;
     }
-    if (window.triColorOffset === undefined) {
-      window.triColorOffset = 0.0;
+    if (window.triColorCenter === undefined) {
+      window.triColorCenter = 0.0;
+    }
+    if (window.triColorRange === undefined) {
+      window.triColorRange = 0.35;
     }
     
-    // 1. 时间基础流速 (无声时约 16s 自循环一周，保证随时双色流转)
-    const baseSpeed = 0.18 * userSpeed;
+    // 1. 物理阻尼平滑计算色彩中心与张力带宽
+    // 低能靠近 0.0 (青色)；最高能量拉到 1.50 (黄绿交界)
+    const targetCenter = musicEnergy * 1.5;
+    // 低能仅 0.35 窄振幅；高能强力撑开至 1.50 宽振幅，色彩对撞极其强烈
+    const targetRange = 0.35 + musicEnergy * 1.15;
     
-    // 2. 能量流速调制 (高能量下流速大幅加快)
+    window.triColorCenter += (targetCenter - window.triColorCenter) * Math.min(1.0, dt * 9.5);
+    window.triColorRange += (targetRange - window.triColorRange) * Math.min(1.0, dt * 9.5);
+    
+    // 2. 简谐振荡角速度控制：高潮时波动频率也随之加快
+    const baseSpeed = 0.9 * userSpeed;
     const energySpeed = musicEnergy * 1.6 * userSpeed;
     window.triColorBasePhase += (baseSpeed + energySpeed) * dt;
-    window.triColorBasePhase = window.triColorBasePhase % 3.0;
     
-    // 3. 瞬态能量偏移拉扯 (重拍时将颜色向前推移)
-    const targetOffset = musicEnergy * 1.35;
-    window.triColorOffset += (targetOffset - window.triColorOffset) * Math.min(1.0, dt * 10.5);
+    // 3. 计算正弦平滑映射并进行三色环无缝包装
+    const osc = Math.sin(window.triColorBasePhase);
+    let finalProgress = window.triColorCenter + osc * (window.triColorRange * 0.5);
+    finalProgress = (finalProgress + 3.0) % 3.0;
     
-    // 4. 计算最终三色环色相进度 [0.0, 3.0]
-    const finalProgress = (window.triColorBasePhase + window.triColorOffset) % 3.0;
-    
-    // 双插值三色环无缝融合
+    // 4. 双线性三色环无缝过渡
     let activeColor = colors[0];
     if (finalProgress < 1.0) {
       // 青色 (#33e6c5) -> 黄色 (#ffd45f)
