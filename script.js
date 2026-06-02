@@ -128,8 +128,8 @@ const customSpan = document.querySelector("#customSpan");
 const customPulse = document.querySelector("#customPulse");
 const applyCustomEffect = document.querySelector("#applyCustomEffect");
 const audioInput = document.querySelector("#audioInput");
-const audioUrlInput = document.querySelector("#audioUrlInput");
-const loadAudioUrl = document.querySelector("#loadAudioUrl");
+const audioRecordList = document.querySelector("#audioRecordList");
+const audioRecordCount = document.querySelector("#audioRecordCount");
 const audioPlayer = document.querySelector("#audioPlayer");
 const audioStatus = document.querySelector("#audioStatus");
 const recordAnimation = document.querySelector("#recordAnimation");
@@ -158,6 +158,8 @@ let ledConfig = {
 };
 let modelRecords = [];
 let uploadedShapeRecords = [];
+let audioRecords = [];
+let activeAudioObjectUrl = "";
 let audioContext;
 let analyser;
 let frequencyData;
@@ -630,70 +632,190 @@ function saveCurrentModelRecord() {
   renderRecords();
 }
 
-function setupAudioFile(file) {
-  if (!file) {
-    return;
-  }
+function openAudioDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("ambientLightAudioLibrary", 1);
 
-  audioPlayer.crossOrigin = "";
-  audioPlayer.src = URL.createObjectURL(file);
-  audioStatus.textContent = `已载入：${file.name}，播放后开始律动`;
-  setEffect("music-ref-flow");
+    request.addEventListener("upgradeneeded", () => {
+      request.result.createObjectStore("tracks", { keyPath: "id" });
+    });
+    request.addEventListener("success", () => resolve(request.result));
+    request.addEventListener("error", () => reject(request.error));
+  });
 }
 
-function resolveAudioUrl(value) {
-  const parsed = new URL(value);
-  const neteaseId =
-    parsed.hostname.includes("music.163.com") &&
-    (parsed.searchParams.get("id") || new URLSearchParams(parsed.hash.split("?")[1] || "").get("id") || parsed.pathname.match(/\/song\/(\d+)/)?.[1]);
+async function readAudioRecords() {
+  const db = await openAudioDb();
 
-  if (neteaseId) {
-    return {
-      url: `https://met.api.xiaoguan.fit/api?server=netease&type=url&id=${neteaseId}`,
-      label: `已识别网易云歌曲 ID：${neteaseId}，播放后开始律动`,
-      crossOrigin: "anonymous",
-    };
-  }
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("tracks", "readonly").objectStore("tracks").getAll();
 
-  return {
-    url: parsed.href,
-    label: "在线音乐已载入，播放后开始律动；若无频谱变化，请确认音频地址允许跨域读取",
-    crossOrigin: parsed.protocol === "data:" ? "" : "anonymous",
-  };
+    request.addEventListener("success", () => {
+      resolve(
+        request.result
+          .map(({ blob, ...record }) => record)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+      );
+      db.close();
+    });
+    request.addEventListener("error", () => {
+      reject(request.error);
+      db.close();
+    });
+  });
 }
 
-function setupAudioUrl(rawUrl) {
-  const value = rawUrl.trim();
+async function getAudioRecord(id) {
+  const db = await openAudioDb();
 
-  if (!value) {
-    audioStatus.textContent = "请输入在线音乐地址";
-    audioUrlInput.focus();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("tracks", "readonly").objectStore("tracks").get(id);
+
+    request.addEventListener("success", () => {
+      resolve(request.result);
+      db.close();
+    });
+    request.addEventListener("error", () => {
+      reject(request.error);
+      db.close();
+    });
+  });
+}
+
+async function putAudioRecord(record) {
+  const db = await openAudioDb();
+
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("tracks", "readwrite").objectStore("tracks").put(record);
+
+    request.addEventListener("success", () => {
+      resolve();
+      db.close();
+    });
+    request.addEventListener("error", () => {
+      reject(request.error);
+      db.close();
+    });
+  });
+}
+
+async function deleteAudioRecord(id) {
+  const db = await openAudioDb();
+
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("tracks", "readwrite").objectStore("tracks").delete(id);
+
+    request.addEventListener("success", () => {
+      resolve();
+      db.close();
+    });
+    request.addEventListener("error", () => {
+      reject(request.error);
+      db.close();
+    });
+  });
+}
+
+function renderAudioRecords() {
+  audioRecordCount.textContent = `${audioRecords.length} tracks`;
+  audioRecordList.innerHTML = "";
+
+  if (!audioRecords.length) {
+    audioRecordList.innerHTML = '<div class="record-card"><span>暂无音乐记录</span></div>';
     return;
   }
 
-  let resolved;
+  audioRecords.forEach((record) => {
+    const card = document.createElement("div");
+    const title = document.createElement("strong");
+    const detail = document.createElement("span");
+    const actions = document.createElement("div");
+    const loadButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
 
-  try {
-    resolved = resolveAudioUrl(value);
-  } catch {
-    audioStatus.textContent = "音乐地址格式不正确，请输入完整的音频链接";
-    audioUrlInput.focus();
+    card.className = "record-card audio-record-card";
+    actions.className = "record-actions two-actions";
+    title.textContent = record.name;
+    detail.textContent = `${Math.max(1, Math.round(record.size / 1024 / 1024))} MB / ${new Date(record.createdAt).toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+    loadButton.type = "button";
+    loadButton.textContent = "切换";
+    deleteButton.type = "button";
+    deleteButton.textContent = "删除";
+
+    loadButton.addEventListener("click", () => loadAudioRecord(record.id));
+    deleteButton.addEventListener("click", async () => {
+      await deleteAudioRecord(record.id);
+      audioRecords = audioRecords.filter((item) => item.id !== record.id);
+      renderAudioRecords();
+
+      if (audioPlayer.dataset.recordId === record.id) {
+        audioPlayer.pause();
+        audioPlayer.removeAttribute("src");
+        audioPlayer.load();
+        audioStatus.textContent = "当前音乐已删除";
+      }
+    });
+
+    actions.append(loadButton, deleteButton);
+    card.append(title, detail, actions);
+    audioRecordList.append(card);
+  });
+}
+
+async function refreshAudioRecords() {
+  audioRecords = await readAudioRecords();
+  renderAudioRecords();
+}
+
+async function loadAudioRecord(id) {
+  const record = await getAudioRecord(id);
+
+  if (!record?.blob) {
+    audioStatus.textContent = "未找到该音乐记录";
+    await refreshAudioRecords();
     return;
   }
 
-  const protocol = new URL(resolved.url).protocol;
-
-  if (!["http:", "https:", "data:"].includes(protocol)) {
-    audioStatus.textContent = "仅支持 http、https 或 data 音频地址";
-    return;
+  if (activeAudioObjectUrl) {
+    URL.revokeObjectURL(activeAudioObjectUrl);
   }
 
+  activeAudioObjectUrl = URL.createObjectURL(record.blob);
   audioPlayer.pause();
-  audioPlayer.crossOrigin = resolved.crossOrigin;
-  audioPlayer.src = resolved.url;
+  audioPlayer.crossOrigin = "";
+  audioPlayer.src = activeAudioObjectUrl;
+  audioPlayer.dataset.recordId = record.id;
   audioPlayer.load();
-  audioStatus.textContent = resolved.label;
+  audioStatus.textContent = `已切换：${record.name}，播放后开始律动`;
   setEffect("music-ref-flow");
+}
+
+async function setupAudioFiles(files) {
+  const items = [...files].filter((file) => file.type.startsWith("audio/"));
+
+  if (!items.length) {
+    audioStatus.textContent = "请选择音频文件";
+    return;
+  }
+
+  for (const file of items) {
+    await putAudioRecord({
+      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${file.name}`,
+      name: file.name,
+      type: file.type || "audio/mpeg",
+      size: file.size,
+      createdAt: new Date().toISOString(),
+      blob: file,
+    });
+  }
+
+  await refreshAudioRecords();
+  await loadAudioRecord(audioRecords[0].id);
 }
 
 function startAudioAnalysis() {
@@ -1283,16 +1405,11 @@ function setupControls() {
   });
   applyCustomEffect.addEventListener("click", applyGeneratedEffect);
   audioInput.addEventListener("change", (event) => {
-    setupAudioFile(event.target.files[0]);
-  });
-  loadAudioUrl.addEventListener("click", () => setupAudioUrl(audioUrlInput.value));
-  audioUrlInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      setupAudioUrl(audioUrlInput.value);
-    }
+    setupAudioFiles(event.target.files);
+    audioInput.value = "";
   });
   audioPlayer.addEventListener("error", () => {
-    audioStatus.textContent = "音乐加载失败，请检查地址是否为可直接播放的音频链接";
+    audioStatus.textContent = "音乐加载失败，请重新上传或切换其他音乐";
   });
   audioPlayer.addEventListener("play", startAudioAnalysis);
   audioPlayer.addEventListener("pause", () => {
@@ -1352,6 +1469,7 @@ function boot() {
   setupTabs();
   setupDrawing();
   setupControls();
+  refreshAudioRecords();
   setColor(colorPicker.value);
   setSpeed(speedSlider.value);
   setIntensity(intensitySlider.value);

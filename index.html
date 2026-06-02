@@ -384,21 +384,6 @@
             <span>Rhythm Modes</span>
             <output id="musicCount">0 patterns</output>
           </div>
-          <div class="import-card">
-            <label class="file-trigger">
-              <span>上传音乐并分析律动</span>
-              <input id="audioInput" type="file" accept="audio/*" />
-            </label>
-            <div class="online-audio-field">
-              <label>
-                <span>在线音乐 URL</span>
-                <input id="audioUrlInput" type="url" placeholder="https://example.com/music.mp3" />
-              </label>
-              <button type="button" id="loadAudioUrl">识别在线音乐</button>
-            </div>
-            <audio id="audioPlayer" controls></audio>
-            <output id="audioStatus">上传本地音乐，或输入可直接访问的 mp3 / wav / ogg 地址后播放</output>
-          </div>
           <div class="effect-grid compact" id="musicGrid"></div>
           <div class="equalizer" aria-hidden="true">
             <span></span>
@@ -409,6 +394,19 @@
             <span></span>
             <span></span>
             <span></span>
+          </div>
+          <div class="import-card">
+            <label class="file-trigger">
+              <span>上传音乐到列表</span>
+              <input id="audioInput" type="file" accept="audio/*" multiple />
+            </label>
+            <div class="section-heading compact-heading">
+              <span>Music Library</span>
+              <output id="audioRecordCount">0 tracks</output>
+            </div>
+            <div class="record-list compact-list audio-record-list" id="audioRecordList"></div>
+            <audio id="audioPlayer" controls></audio>
+            <output id="audioStatus">上传音乐后，可在列表中随时切换并播放律动</output>
           </div>
           <div class="export-actions">
             <button type="button" id="recordAnimation">下载动画</button>
