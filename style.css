@@ -234,8 +234,8 @@ h1 {
 
 .preview-track {
   fill: none;
-  stroke: rgba(239, 232, 210, 0.18);
-  stroke-width: 12;
+  stroke: rgba(239, 232, 210, 0.16);
+  stroke-width: 16; /* Thicker track slot */
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -245,15 +245,15 @@ h1 {
 .preview-light-alt {
   fill: none;
   stroke: rgb(var(--light-rgb));
-  stroke-width: 10;
+  stroke-width: 14; /* Thicker light strip */
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: calc(var(--intensity) * 0.95);
 }
 
 .preview-glow {
-  stroke-width: 18;
-  opacity: calc(var(--intensity) * 0.2);
+  stroke-width: 26; /* Thicker background glow */
+  opacity: calc(var(--intensity) * 0.22);
 }
 
 .preview-light,
@@ -303,19 +303,21 @@ h1 {
 }
 
 .led-layer {
-  display: none;
+  display: block !important; /* Always visible to show physical LED bulbs layout */
 }
 
 .led-layer circle {
-  stroke: rgba(12, 13, 12, 0.72);
-  stroke-width: 1.1;
-  opacity: 0.78;
+  fill: rgba(0, 0, 0, 0.42); /* Semi-transparent black center to allow underlying path glow to shine through! */
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.85;
+  opacity: 0.88;
+  transition: fill 120ms ease, stroke 120ms ease, opacity 120ms ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
 
 .led-layer circle.is-start {
-  stroke: rgba(239, 232, 210, 0.72);
-  stroke-width: 1.6;
-  opacity: 1;
+  stroke: rgba(239, 232, 210, 0.58);
+  stroke-width: 1.35;
 }
 
 .spark-layer circle {
@@ -1398,14 +1400,14 @@ h1 {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(10px * var(--music-scale));
+  stroke-width: calc(14px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 .is-rainbow.mode-music-ref-pulse-rhythm .rainbow-flow-layer path {
   display: block;
   stroke-dasharray: var(--path-length) 0;
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(10px * var(--music-scale));
+  stroke-width: calc(14px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb) / 0.95));
 }
 
@@ -1415,7 +1417,7 @@ h1 {
   stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(11px * var(--music-scale));
+  stroke-width: calc(15px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 .is-rainbow.mode-music-ref-flow .rainbow-flow-layer path {
@@ -1423,7 +1425,7 @@ h1 {
   stroke-dasharray: var(--dash-flow-on) var(--dash-flow-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(11px * var(--music-scale));
+  stroke-width: calc(15px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 
@@ -1434,14 +1436,14 @@ h1 {
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(10px * var(--music-scale));
+  stroke-width: calc(14px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
 .mode-music-ref-ripple .preview-light-alt {
   stroke: #36e6ff;
   stroke-dashoffset: calc(var(--music-flow-offset) * 0.65); /* different offset speed */
   opacity: calc(var(--intensity) * var(--music-intensity) * 0.72);
-  stroke-width: calc(8px * var(--music-scale));
+  stroke-width: calc(11px * var(--music-scale));
   filter: drop-shadow(0 0 calc(var(--music-glow) * 0.8) #36e6ff);
 }
 .is-rainbow.mode-music-ref-ripple .rainbow-flow-layer path {
@@ -1450,7 +1452,7 @@ h1 {
   stroke-dasharray: var(--dash-ripple-on) var(--dash-ripple-off);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(10px * var(--music-scale));
+  stroke-width: calc(14px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) #1da8ff);
 }
 
@@ -1487,7 +1489,7 @@ h1 {
   transform-origin: 150px 150px;
   transform: rotate(var(--music-rotation, 0deg));
   opacity: calc(var(--intensity) * var(--music-intensity));
-  stroke-width: calc(11px * var(--music-scale));
+  stroke-width: calc(15px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(255 214 95 / 0.5));
 }
 /* 在彩色开启状态下炫彩旋转 */
@@ -1501,7 +1503,7 @@ h1 {
   stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-strobe));
-  stroke-width: calc(12px * var(--music-scale));
+  stroke-width: calc(16px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) #ff2a2a);
 }
 .is-rainbow.mode-music-strobe-alert .rainbow-flow-layer path {
@@ -1509,7 +1511,7 @@ h1 {
   stroke-dasharray: calc(var(--path-length) * 0.28) calc(var(--path-length) * 0.12);
   stroke-dashoffset: var(--music-flow-offset);
   opacity: calc(var(--intensity) * var(--music-strobe));
-  stroke-width: calc(12px * var(--music-scale));
+  stroke-width: calc(16px * var(--music-scale));
   filter: drop-shadow(0 0 var(--music-glow) rgb(51 230 197 / 0.5));
 }
 
