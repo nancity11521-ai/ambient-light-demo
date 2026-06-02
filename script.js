@@ -188,6 +188,7 @@ let prevBreatheColor = "#33e6c5";
 let targetBreatheColor = "#33e6c5";
 let colorTransitionProgress = 1.0;
 let lastBeatTime = 0;
+let musicBreatheTimer = 0; // 独立每秒切换颜色计时器
 
 function interpolateColor(color1, color2, factor) {
   const c1 = hexToRgb(color1);
@@ -514,6 +515,7 @@ function setEffect(effectId) {
   updateSelectedSummary();
 
   if (effectId.startsWith("music-")) {
+    musicBreatheTimer = 0;
     cancelAnimationFrame(audioFrameId);
     lastFrameTime = performance.now();
     analyzeAudioFrame();
@@ -1104,39 +1106,44 @@ function analyzeAudioFrame() {
       colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
     }
 
-    const now = performance.now();
-
     // Auto-initialize if colors changed or empty
-    if (!colors.includes(prevBreatheColor)) {
+    if (!colors.includes(prevBreatheColor) || !colors.includes(targetBreatheColor)) {
       currentBreatheColorIdx = 0;
       prevBreatheColor = colors[0];
       targetBreatheColor = colors[0];
-      colorTransitionProgress = 1.0;
+      musicBreatheTimer = 0;
     }
 
-    // Trigger color index advancement on drum hit with a 380ms rhythm debouncer
-    if (isBeat && (now - lastBeatTime > 380)) {
+    // Accumulate time towards the 1.0 second interval (speed slider responsive!)
+    musicBreatheTimer += dt * userSpeed;
+    const targetInterval = 1.0;
+
+    if (musicBreatheTimer >= targetInterval) {
+      musicBreatheTimer = musicBreatheTimer % targetInterval;
       const prevIdx = currentBreatheColorIdx;
       currentBreatheColorIdx = (prevIdx + 1) % numColors;
       prevBreatheColor = colors[prevIdx];
       targetBreatheColor = colors[currentBreatheColorIdx];
-      colorTransitionProgress = 0.0;
-      lastBeatTime = now;
     }
 
-    // Smoothly morph color over 0.35 seconds
-    colorTransitionProgress = Math.min(1.0, colorTransitionProgress + dt / 0.35);
+    // Smoothly blend to the next color during the first 0.4 seconds of each 1-second interval
+    const blendDuration = 0.4;
+    const progress = Math.min(1.0, musicBreatheTimer / blendDuration);
     const activeColor = interpolateColor(
       prevBreatheColor,
       targetBreatheColor,
-      colorTransitionProgress
+      progress
     );
 
-    // Make light intensity dynamically clamp and pulse with real-time audio volume
-    const beatVolume = 0.12 + bassEnergy * 0.88;
+    // Make light intensity dynamically couple with music energy (bass hits & overall volume)
+    // Minimum opacity is clamped at 0.35 to guarantee a persistent glow ("一直有颜色在")
+    const minOpacity = 0.35;
+    const maxOpacity = 0.98;
+    const rhythmStrength = energy * 0.4 + bassEnergy * 0.6;
+    const dynamicOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
 
     root.style.setProperty("--music-breathe-color", activeColor);
-    root.style.setProperty("--music-breathe-opacity", beatVolume.toFixed(3));
+    root.style.setProperty("--music-breathe-opacity", dynamicOpacity.toFixed(3));
   }
 
   // Handle effect-specific active JS-driven effects
