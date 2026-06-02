@@ -1409,7 +1409,6 @@ h1 {
   0%, 100% {
     stroke: #33e6c5;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #33e6c5) drop-shadow(0 0 28px rgba(51, 230, 197, 0.55));
   }
   13% {
     stroke: #33e6c5;
@@ -1417,21 +1416,17 @@ h1 {
   20% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   21%, 29% {
-    opacity: 0;
-    filter: none; /* Completely black / dark gap flat hold */
+    opacity: 0; /* Completely black / dark gap flat hold */
   }
   25% {
     stroke: #ff6d7a;
     opacity: 0;
-    filter: none;
   }
   30% {
     stroke: #ff6d7a;
     opacity: 0;
-    filter: none;
   }
   37% {
     stroke: #ff6d7a;
@@ -1439,7 +1434,6 @@ h1 {
   50% {
     stroke: #ff6d7a;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #ff6d7a) drop-shadow(0 0 28px rgba(255, 109, 122, 0.55));
   }
   63% {
     stroke: #ff6d7a;
@@ -1447,21 +1441,17 @@ h1 {
   70% {
     stroke: #ff6d7a;
     opacity: 0;
-    filter: none;
   }
   71%, 79% {
-    opacity: 0;
-    filter: none; /* Completely black / dark gap flat hold */
+    opacity: 0; /* Completely black / dark gap flat hold */
   }
   75% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   80% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   87% {
     stroke: #33e6c5;
@@ -1472,7 +1462,6 @@ h1 {
   0%, 100% {
     stroke: #33e6c5;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #33e6c5) drop-shadow(0 0 28px rgba(51, 230, 197, 0.55));
   }
   8% {
     stroke: #33e6c5;
@@ -1483,21 +1472,17 @@ h1 {
   19% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   20%, 26% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   23% {
     stroke: #a855f7;
     opacity: 0;
-    filter: none;
   }
   27% {
     stroke: #a855f7;
     opacity: 0;
-    filter: none;
   }
   34% {
     stroke: #a855f7;
@@ -1505,7 +1490,6 @@ h1 {
   41% {
     stroke: #a855f7;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 28px rgba(168, 85, 247, 0.55));
   }
   45% {
     stroke: #a855f7;
@@ -1513,21 +1497,17 @@ h1 {
   52% {
     stroke: #a855f7;
     opacity: 0;
-    filter: none;
   }
   53%, 59% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   56% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   60% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   67% {
     stroke: #ffd45f;
@@ -1535,7 +1515,6 @@ h1 {
   74% {
     stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #ffd45f) drop-shadow(0 0 28px rgba(255, 212, 95, 0.55));
   }
   78% {
     stroke: #ffd45f;
@@ -1543,21 +1522,17 @@ h1 {
   85% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   86%, 92% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   89% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   93% {
     stroke: #33e6c5;
     opacity: 0;
-    filter: none;
   }
   97% {
     stroke: #33e6c5;
@@ -1568,7 +1543,6 @@ h1 {
   0%, 100% {
     stroke: #7cf26d;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #7cf26d) drop-shadow(0 0 28px rgba(124, 242, 109, 0.55));
   }
   6% {
     stroke: #7cf26d;
@@ -1579,21 +1553,17 @@ h1 {
   15% {
     stroke: #7cf26d;
     opacity: 0;
-    filter: none;
   }
   16%, 20% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   18% {
     stroke: #61a8ff;
     opacity: 0;
-    filter: none;
   }
   21% {
     stroke: #61a8ff;
     opacity: 0;
-    filter: none;
   }
   27% {
     stroke: #61a8ff;
@@ -1601,7 +1571,6 @@ h1 {
   31% {
     stroke: #61a8ff;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #61a8ff) drop-shadow(0 0 28px rgba(97, 168, 255, 0.55));
   }
   34% {
     stroke: #61a8ff;
@@ -1609,21 +1578,17 @@ h1 {
   40% {
     stroke: #61a8ff;
     opacity: 0;
-    filter: none;
   }
   41%, 45% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   43% {
     stroke: #f43f5e;
     opacity: 0;
-    filter: none;
   }
   46% {
     stroke: #f43f5e;
     opacity: 0;
-    filter: none;
   }
   52% {
     stroke: #f43f5e;
@@ -1631,7 +1596,6 @@ h1 {
   56% {
     stroke: #f43f5e;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #f43f5e) drop-shadow(0 0 28px rgba(244, 63, 94, 0.55));
   }
   59% {
     stroke: #f43f5e;
@@ -1639,21 +1603,17 @@ h1 {
   65% {
     stroke: #f43f5e;
     opacity: 0;
-    filter: none;
   }
   66%, 70% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   68% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   71% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   77% {
     stroke: #ffd45f;
@@ -1661,7 +1621,6 @@ h1 {
   81% {
     stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
-    filter: drop-shadow(0 0 10px #ffd45f) drop-shadow(0 0 28px rgba(255, 212, 95, 0.55));
   }
   84% {
     stroke: #ffd45f;
@@ -1669,26 +1628,22 @@ h1 {
   90% {
     stroke: #ffd45f;
     opacity: 0;
-    filter: none;
   }
   91%, 95% {
-    opacity: 0;
-    filter: none; /* Completely dark gap hold */
+    opacity: 0; /* Completely dark gap hold */
   }
   93% {
     stroke: #7cf26d;
     opacity: 0;
-    filter: none;
   }
   96% {
     stroke: #7cf26d;
     opacity: 0;
-    filter: none;
   }
   98% {
     stroke: #7cf26d;
   }
-/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
+}/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
 .mode-music-dual-color-breathe .preview-light,
 .mode-music-tri-color-breathe .preview-light,
 .mode-music-quad-color-breathe .preview-light {
