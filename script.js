@@ -496,6 +496,12 @@ function setEffect(effectId) {
     button.classList.toggle("is-active", button.dataset.effect === effect.id);
   });
   updateSelectedSummary();
+
+  if (effectId.startsWith("music-")) {
+    cancelAnimationFrame(audioFrameId);
+    lastFrameTime = performance.now();
+    analyzeAudioFrame();
+  }
 }
 
 function updateSelectedSummary() {
@@ -972,45 +978,60 @@ function startAudioAnalysis() {
 }
 
 function analyzeAudioFrame() {
-  if (!analyser || audioPlayer.paused) {
-    // 音乐未播放或暂停时，平滑维持一套高质感预览的基准值，保证所有律动灯带优雅常亮，拒绝全黑
-    root.style.setProperty("--music-intensity", "0.72");
-    root.style.setProperty("--music-scale", "1.0");
-    root.style.setProperty("--music-glow", "12px");
-    root.style.setProperty("--music-strobe", "0.05");
-    root.style.setProperty("--music-breathe-color", "#33e6c5");
-    root.style.setProperty("--music-breathe-opacity", "0.72");
+  // 性能与功耗保护：非音乐效果下自动休眠，避免后台无谓运行
+  if (!currentEffect.id.startsWith("music-")) {
     return;
   }
 
-  analyser.getByteFrequencyData(frequencyData);
-  const average = frequencyData.reduce((total, value) => total + value, 0) / frequencyData.length;
-  const bass = frequencyData.slice(0, 12).reduce((total, value) => total + value, 0) / 12;
-  const mid = frequencyData.slice(12, 60).reduce((total, value) => total + value, 0) / 48;
-  const treble = frequencyData.slice(60, 120).reduce((total, value) => total + value, 0) / 60;
-  
-  const energy = Math.min(1, average / 140);
-  const bassEnergy = Math.min(1, bass / 160);
-  const midEnergy = Math.min(1, mid / 140);
-  const trebleEnergy = Math.min(1, treble / 110);
+  let average = 0, bass = 0, mid = 0, treble = 0;
+  let energy = 0, bassEnergy = 0, midEnergy = 0, trebleEnergy = 0;
+
+  if (!analyser || audioPlayer.paused) {
+    // 音乐未播放或暂停时，开启“虚拟声浪引擎”，模拟一种轻柔的、富有层次的虚拟律动，让氛围灯依然栩栩如生！
+    const t = performance.now() / 1000;
+    
+    // 利用多个不同相位的 Sine 弦波模拟富有层次感的“虚拟节拍”
+    energy = 0.45 + Math.sin(t * 2.2) * 0.35 + Math.cos(t * 1.4) * 0.15; // 0.1 -> 0.95 起伏
+    bassEnergy = 0.40 + Math.sin(t * 1.8 + 0.5) * 0.30 + (Math.sin(t * 4.2) * 0.08); // 物理打击起伏
+    midEnergy = 0.50 + Math.cos(t * 2.5) * 0.25;
+    trebleEnergy = 0.35 + Math.sin(t * 3.1) * 0.25;
+    
+    // 限制在 [0, 1] 范围
+    energy = Math.max(0, Math.min(1, energy));
+    bassEnergy = Math.max(0, Math.min(1, bassEnergy));
+    midEnergy = Math.max(0, Math.min(1, midEnergy));
+    trebleEnergy = Math.max(0, Math.min(1, trebleEnergy));
+    
+    audioStatus.textContent = "虚拟声浪中：正在模拟优雅的灯光律动 (未播放音乐)";
+  } else {
+    // 真实播放音乐时，读取真实频谱
+    analyser.getByteFrequencyData(frequencyData);
+    average = frequencyData.reduce((total, value) => total + value, 0) / frequencyData.length;
+    bass = frequencyData.slice(0, 12).reduce((total, value) => total + value, 0) / 12;
+    mid = frequencyData.slice(12, 60).reduce((total, value) => total + value, 0) / 48;
+    treble = frequencyData.slice(60, 120).reduce((total, value) => total + value, 0) / 60;
+    
+    energy = Math.min(1, average / 140);
+    bassEnergy = Math.min(1, bass / 160);
+    midEnergy = Math.min(1, mid / 140);
+    trebleEnergy = Math.min(1, treble / 110);
+    
+    audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% | 低频 ${Math.round(bassEnergy * 100)}% | 基础速度 ${userSpeed.toFixed(2)}x`;
+  }
 
   // Define dynamic beat thresholding (Bass Beat detection!)
   const isBeat = bassEnergy > 0.62;
   
   // Real-time variables optimized for extreme high-fidelity responsiveness!
-  // Opacity: drops lower in quiet parts (0.08) and hits full bright on energy peaks (1.0)
   const dynamicIntensity = 0.08 + energy * 0.92;
   root.style.setProperty("--music-intensity", dynamicIntensity.toFixed(2));
   
-  // Scale / Width: grows thicker and expands when bass hits!
   const dynamicScale = 0.78 + bassEnergy * 0.68; // Expands up to ~1.46x size!
   root.style.setProperty("--music-scale", dynamicScale.toFixed(2));
   
-  // Glow: expands dramatically on beats!
   const dynamicGlow = (3 + bassEnergy * 28).toFixed(1) + "px";
   root.style.setProperty("--music-glow", dynamicGlow);
   
-  // Strobe: flash bright exactly on beat, stay dark otherwise
   const strobe = isBeat ? 1.0 : 0.05;
   root.style.setProperty("--music-strobe", strobe.toFixed(2));
 
@@ -1107,7 +1128,6 @@ function analyzeAudioFrame() {
     }
   }
 
-  audioStatus.textContent = `律动中：能量 ${Math.round(energy * 100)}% | 低频 ${Math.round(bassEnergy * 100)}% | 基础速度 ${userSpeed.toFixed(2)}x`;
   audioFrameId = requestAnimationFrame(analyzeAudioFrame);
 }
 
