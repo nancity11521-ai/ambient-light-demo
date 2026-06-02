@@ -1096,7 +1096,7 @@ function analyzeAudioFrame() {
 
   if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
     let numColors = 2;
-    let colors = ["#33e6c5", "#ff6d7a"];
+    let colors = ["#33e6c5", "#ffd45f"];
     if (effectId.includes("tri")) {
       numColors = 3;
       colors = ["#33e6c5", "#a855f7", "#ffd45f"];
