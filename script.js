@@ -1380,7 +1380,7 @@ function analyzeAudioFrame() {
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
   } else if (effectId === "music-rainbow-flow") {
-    // 平滑彩虹流光灯：渐变光弧沿圆周平滑旋转
+    // 平滑彩虹流光灯：固定12点钟顺时针延伸，根据音乐能量律动
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
     // 非线性对比度亮度
@@ -1390,17 +1390,17 @@ function analyzeAudioFrame() {
     const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     root.style.setProperty("--music-rainbow-flow-opacity", finalOpacity.toFixed(3));
     
-    // 累加旋转偏移量 (在 4 秒一周的基准上，高能时转速变快)
-    if (window.rainbowFlowOffset === undefined) {
-      window.rainbowFlowOffset = 0.0;
-    }
     const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
-    const rotateSpeed = (pathLength / 4.0) + musicEnergy * 120;
-    window.rainbowFlowOffset = (window.rainbowFlowOffset - rotateSpeed * userSpeed * dt);
-    if (Math.abs(window.rainbowFlowOffset) > pathLength) {
-      window.rainbowFlowOffset = window.rainbowFlowOffset % pathLength;
+    
+    // 平滑的一阶滤波器控制延伸长度：当能量最低时，亮起 5% 起点；最高时，延伸到 100%
+    if (window.rainbowFlowWidth === undefined) {
+      window.rainbowFlowWidth = 0.05 * pathLength;
     }
-    root.style.setProperty("--music-rainbow-flow-offset", window.rainbowFlowOffset.toFixed(1));
+    const targetWidth = (0.05 + musicEnergy * 0.95) * pathLength;
+    const easing = Math.min(1.0, dt * 15.0); // 15.0Hz 阻尼平滑过滤
+    window.rainbowFlowWidth += (targetWidth - window.rainbowFlowWidth) * easing;
+    
+    root.style.setProperty("--music-rainbow-flow-width", window.rainbowFlowWidth.toFixed(1));
 
   } else if (effectId === "music-ripple-breath") {
     // 平滑对称涟漪灯：光波自底部对称向两侧循环扩散

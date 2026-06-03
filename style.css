@@ -1746,20 +1746,43 @@ h1 {
 
 /* 平滑彩虹流光灯 (Rainbow Flow Rhythm) */
 .mode-music-rainbow-flow .preview-light {
-  display: none !important; /* 彩虹流光直接使用 rainbow-flow-layer 以展现高质感多色渐变 */
+  display: block !important;
+  stroke: rgb(var(--light-rgb)) !important;
+  stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
+  stroke-dashoffset: 0;
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
+  stroke-width: 14px;
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 .mode-music-rainbow-flow .preview-glow {
-  display: none !important;
+  display: block !important;
+  stroke: rgb(var(--light-rgb)) !important;
+  stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
+  stroke-dashoffset: 0;
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.85);
+  stroke-width: 26px; /* 完美发光大辉光 */
+  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 .mode-music-rainbow-flow .preview-track {
   stroke: #1a1a1a !important;
   opacity: 0.15;
 }
 .mode-music-rainbow-flow .rainbow-flow-layer path {
+  display: none !important; /* 默认单色模式，隐藏彩色图层 */
+}
+
+/* 当开启彩色流动 (.is-rainbow) 时，切换为高质感多色渐变 */
+.is-rainbow.mode-music-rainbow-flow .preview-light {
+  display: none !important;
+}
+.is-rainbow.mode-music-rainbow-flow .preview-glow {
+  display: none !important;
+}
+.is-rainbow.mode-music-rainbow-flow .rainbow-flow-layer path {
   display: block !important;
   stroke: url("#rainbowStroke") !important;
-  stroke-dasharray: calc(var(--path-length) * 0.6) calc(var(--path-length) * 0.4);
-  stroke-dashoffset: var(--music-rainbow-flow-offset);
+  stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
+  stroke-dashoffset: 0;
   opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
   stroke-width: 14px;
   filter: drop-shadow(0 0 var(--music-glow) rgb(255 180 50 / 0.62));
