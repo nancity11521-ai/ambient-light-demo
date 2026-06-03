@@ -1167,21 +1167,24 @@ function analyzeAudioFrame() {
     // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
+    // 能量变化率 (一阶差分)
+    if (window.lastTriEnergy === undefined) {
+      window.lastTriEnergy = musicEnergy;
+    }
+    const energyDelta = musicEnergy - window.lastTriEnergy;
+    window.lastTriEnergy = musicEnergy;
+    
     // 升级为非线性高动态明暗对比度曲线：稍微增加明暗变化，暗部更深邃(0.26)，亮部更璀璨(1.0)
-    // 配合 1.25 次幂 Gamma 变换，小能量下有温润优雅的深呼吸感，重拍爆发时对比度更强烈！
     const minOpacity = 0.26;
     const maxOpacity = 1.0;
     const contrastEnergy = Math.pow(musicEnergy, 1.25);
     const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 殿堂级「色彩能量共鸣引擎」 (全新色彩情绪张力版)
-    // 根据颜色控制和调节能量大小，而不是单纯地用明暗表达：
-    // - 能量低 (Low Energy): 色彩中心靠拢在宁静收敛的青色 (#33e6c5) 附近，
-    //   同时色彩波动带宽极窄 (0.35)，仅在青色微变区间进行静谧柔和的呼吸，用“冷、静、敛”表达低能。
-    // - 能量高 (High Energy): 色彩中心强力向极具张力的黄色与翠绿色 (#36e67f) 区间推移，
-    //   同时色彩波动带宽大幅撑开至宽幅 (1.50)，在黄-绿-青大对比色之间剧烈交替震荡，用“暖、耀、张”释放音浪！
-    // - 物理阻尼过滤，保证中心偏置与振幅带宽平滑无缝地液体级过渡。
+    // 🌊 殿堂级「色彩能量共鸣与瞬态冲击响应引擎」 (3色版)
+    // 根据颜色控制和调节能量大小，同时瞬态爆发触发卡点瞬切：
+    // - 能量突变 (Transient Beat): 能量突然快速升高时(能量差分 > 0.07)，瞬间向前推送色相相位，让色彩跟手秒切！
+    // - 自适应阻尼 (Adaptive Damping): 平稳时阻尼系数小，流动丝滑；检测到大重拍/突变时，阻尼系数被拉高至极大，瞬间到位！
     // ========================================================
     if (window.triColorBasePhase === undefined) {
       window.triColorBasePhase = 0.0;
@@ -1193,26 +1196,31 @@ function analyzeAudioFrame() {
       window.triColorRange = 0.35;
     }
     
-    // 1. 物理阻尼平滑计算色彩中心与张力带宽
-    // 低能靠近 0.0 (青色)；最高能量拉到 1.50 (黄绿交界)
+    // 瞬态脉冲直接推送
+    if (energyDelta > 0.07) {
+      window.triColorBasePhase += energyDelta * 1.5;
+    }
+    
     const targetCenter = musicEnergy * 1.5;
-    // 低能仅 0.35 窄振幅；高能强力撑开至 1.50 宽振幅，色彩对撞极其强烈
     const targetRange = 0.35 + musicEnergy * 1.15;
     
-    window.triColorCenter += (targetCenter - window.triColorCenter) * Math.min(1.0, dt * 9.5);
-    window.triColorRange += (targetRange - window.triColorRange) * Math.min(1.0, dt * 9.5);
+    // 差分自适应阻尼因子 (能量突变越大，逼近速度越快，最高可达 50.0+)
+    const dampingFactor = 4.0 + Math.pow(Math.abs(energyDelta), 1.2) * 55.0;
     
-    // 2. 简谐振荡角速度控制：高潮时波动频率也随之加快
+    window.triColorCenter += (targetCenter - window.triColorCenter) * Math.min(1.0, dt * dampingFactor);
+    window.triColorRange += (targetRange - window.triColorRange) * Math.min(1.0, dt * dampingFactor);
+    
+    // 简谐振荡角速度控制：高潮时波动频率也随之加快
     const baseSpeed = 0.9 * userSpeed;
     const energySpeed = musicEnergy * 1.6 * userSpeed;
     window.triColorBasePhase += (baseSpeed + energySpeed) * dt;
     
-    // 3. 计算正弦平滑映射并进行三色环无缝包装
+    // 计算正弦平滑映射并进行三色环无缝包装
     const osc = Math.sin(window.triColorBasePhase);
     let finalProgress = window.triColorCenter + osc * (window.triColorRange * 0.5);
     finalProgress = (finalProgress + 3.0) % 3.0;
     
-    // 4. 双线性三色环无缝过渡
+    // 双线性三色环无缝过渡
     let activeColor = colors[0];
     if (finalProgress < 1.0) {
       // 青色 (#33e6c5) -> 黄色 (#ffd45f)
@@ -1234,21 +1242,24 @@ function analyzeAudioFrame() {
     // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
-    // 升级为非线性高动态明暗对比度曲线：稍微增加明暗变化，暗部更深邃(0.26)，亮部更璀璨(1.0)
-    // 配合 1.25 次幂 Gamma 变换，小能量下有温润优雅的深呼吸感，重拍爆发时对比度更强烈！
+    // 能量变化率 (一阶差分)
+    if (window.lastQuadEnergy === undefined) {
+      window.lastQuadEnergy = musicEnergy;
+    }
+    const energyDelta = musicEnergy - window.lastQuadEnergy;
+    window.lastQuadEnergy = musicEnergy;
+    
+    // 升级为非线性高动态明暗对比度曲线
     const minOpacity = 0.26;
     const maxOpacity = 1.0;
     const contrastEnergy = Math.pow(musicEnergy, 1.25);
     const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     
     // ========================================================
-    // 🌊 殿堂级「色彩能量共鸣引擎」 (全新4色流体时间耦合版)
-    // 根据颜色控制和调节能量大小，而不是单纯地用明暗表达：
-    // - 能量低 (Low Energy): 色彩中心靠拢在宁静收敛的青色 (#33e6c5) 和科技冰蓝 (#2b85ff) 附近，
-    //   同时色彩流动带宽极窄 (0.45)，仅在青-蓝之间进行温和雅致的缓慢流动，用“冷静幽美”表达低能。
-    // - 能量高 (High Energy): 色彩中心强力向极具张力的黄色与翠绿色 (#36e67f) 区间推移，
-    //   同时色彩流动带宽大幅撑开至宽幅 (2.00)，在黄-绿-蓝-青大对比色之间剧烈交替震荡，用“斑斓张力”释放音浪！
-    // - 物理阻尼过滤，保证中心偏置与振幅带宽平滑无缝地液体级过渡。
+    // 🌊 殿堂级「色彩能量共鸣与瞬态冲击响应引擎」 (4色版)
+    // 根据颜色控制和调节能量大小，同时瞬态爆发触发卡点瞬切：
+    // - 能量突变 (Transient Beat): 能量突然快速升高时(能量差分 > 0.07)，瞬间向前推送色相相位，让色彩跟手秒切！
+    // - 自适应阻尼 (Adaptive Damping): 平稳时阻尼系数小，流动丝滑；检测到大重拍/突变时，阻尼系数被拉高至极大，瞬间到位！
     // ========================================================
     if (window.quadColorBasePhase === undefined) {
       window.quadColorBasePhase = 0.0;
@@ -1260,26 +1271,31 @@ function analyzeAudioFrame() {
       window.quadColorRange = 0.45;
     }
     
-    // 1. 物理阻尼平滑计算色彩中心与张力带宽
-    // 低能靠近 0.0 (青色)；最高能量拉到 1.60 (黄绿交界)
+    // 瞬态脉冲直接推送
+    if (energyDelta > 0.07) {
+      window.quadColorBasePhase += energyDelta * 1.5;
+    }
+    
     const targetCenter = musicEnergy * 1.6;
-    // 低能仅 0.45 窄振幅；高能强力撑开至 2.00 宽振幅，色彩对撞极其强烈
     const targetRange = 0.45 + musicEnergy * 1.55;
     
-    window.quadColorCenter += (targetCenter - window.quadColorCenter) * Math.min(1.0, dt * 9.5);
-    window.quadColorRange += (targetRange - window.quadColorRange) * Math.min(1.0, dt * 9.5);
+    // 差分自适应阻尼因子
+    const dampingFactor = 4.0 + Math.pow(Math.abs(energyDelta), 1.2) * 55.0;
     
-    // 2. 简谐振荡角速度控制：高潮时波动频率也随之加快
+    window.quadColorCenter += (targetCenter - window.quadColorCenter) * Math.min(1.0, dt * dampingFactor);
+    window.quadColorRange += (targetRange - window.quadColorRange) * Math.min(1.0, dt * dampingFactor);
+    
+    // 简谐振荡角速度控制
     const baseSpeed = 0.9 * userSpeed;
     const energySpeed = musicEnergy * 1.6 * userSpeed;
     window.quadColorBasePhase += (baseSpeed + energySpeed) * dt;
     
-    // 3. 计算正弦平滑映射并进行四色环无缝包装 [0.0, 4.0]
+    // 计算正弦平滑映射并进行四色环无缝包装 [0.0, 4.0]
     const osc = Math.sin(window.quadColorBasePhase);
     let finalProgress = window.quadColorCenter + osc * (window.quadColorRange * 0.5);
     finalProgress = (finalProgress + 4.0) % 4.0;
     
-    // 4. 四色环双线性无缝过渡
+    // 四色环双线性无缝过渡
     let activeColor = colors[0];
     if (finalProgress < 1.0) {
       // 青色 (#33e6c5) -> 黄色 (#ffd45f)
