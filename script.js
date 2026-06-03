@@ -75,6 +75,7 @@ const musicEffects = [
   { id: "music-tri-color-breathe", name: "三色律动呼吸", desc: "三色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-quad-color-breathe", name: "四色律动呼吸", desc: "四色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-ring-chase", name: "环形流光跑马灯", desc: "车载环形流光跑马灯，明暗分段沿环身循环流转" },
+  { id: "music-dot-rainbow-flow", name: "点阵彩虹流光灯", desc: "彩虹光弧沿点阵圆周平滑旋转，未点亮区域保留暗灰灯珠质感" },
 ];
 
 const scenarios = [
@@ -1380,7 +1381,72 @@ function analyzeAudioFrame() {
   }
 
   // Handle effect-specific active JS-driven effects
-  if (effectId === "music-spectrum-wave") {
+  if (effectId === "music-dot-rainbow-flow") {
+    // 点阵彩虹流光灯
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 一阶差分
+    if (window.dotRainbowEnergy === undefined) {
+      window.dotRainbowEnergy = musicEnergy;
+    }
+    const energyDelta = musicEnergy - window.dotRainbowEnergy;
+    window.dotRainbowEnergy = musicEnergy;
+    
+    // 累加旋转相位 (在 4 秒一周的基础上，高能时转速变快)
+    if (window.dotRainbowPhase === undefined) {
+      window.dotRainbowPhase = 0.0;
+    }
+    const baseSpeed = 0.25; // 1.0 / 4s = 0.25 转每秒 (4秒一周)
+    const energySpeed = musicEnergy * 0.16; // 随能量提速
+    window.dotRainbowPhase += (baseSpeed + energySpeed) * userSpeed * dt;
+    window.dotRainbowPhase = window.dotRainbowPhase % 1.0;
+    
+    // 点亮区域比例 (60% 圈，即约 216°)
+    const litRatio = 0.60;
+    
+    const totalLeds = ledConfig.groups * ledConfig.perGroup;
+    const leds = ledLayer.querySelectorAll("circle");
+    
+    leds.forEach((led, idx) => {
+      const ledPercent = idx / totalLeds;
+      
+      // 计算在旋转坐标系下的相对位置
+      let relPercent = (ledPercent - window.dotRainbowPhase + 1.0) % 1.0;
+      
+      if (relPercent <= litRatio) {
+        // --- 点亮区域 (彩虹渐变发光段) ---
+        const p = relPercent / litRatio; // [0.0, 1.0] 的亮区相对位置
+        
+        // 依次过渡为蓝、青、绿、黄、橙、红、粉、紫，再回到蓝色 (色相递减)
+        const hue = (240 - p * 360 + 360) % 360;
+        
+        // 边缘衰减：头部淡入 (前 12%)，尾部逐渐变暗 (后 32%)
+        let opacityFactor = 1.0;
+        if (p < 0.12) {
+          opacityFactor = p / 0.12;
+        } else if (p > 0.68) {
+          opacityFactor = (1.0 - p) / 0.32;
+        }
+        
+        // 亮度随音乐能量闪烁律动
+        const minOpacity = 0.35;
+        const maxOpacity = 1.0;
+        const currentOpacity = (minOpacity + musicEnergy * (maxOpacity - minOpacity)) * opacityFactor;
+        
+        led.style.fill = `hsl(${hue}, 100%, 60%)`;
+        led.style.opacity = currentOpacity.toFixed(3);
+        led.style.r = "3.2"; // 稍微膨胀发光灯珠
+        led.style.filter = `drop-shadow(0 0 5px hsl(${hue}, 100%, 65%))`;
+      } else {
+        // --- 未点亮区域 (深灰点阵) ---
+        led.style.fill = "#2d2d2d";
+        led.style.opacity = "0.45"; // 保留暗灰色，呈现未点亮灯珠质感
+        led.style.r = "2.3"; // 稍微缩回
+        led.style.filter = "none";
+      }
+    });
+
+  } else if (effectId === "music-spectrum-wave") {
     // Spectrum Wave: LED bulbs scale and flash dramatically on frequency channels!
     const totalLeds = ledConfig.groups * ledConfig.perGroup;
     const leds = ledLayer.querySelectorAll("circle");

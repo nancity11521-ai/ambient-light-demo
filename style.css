@@ -1744,6 +1744,22 @@ h1 {
   filter: drop-shadow(0 0 var(--music-glow) var(--music-breathe-color));
 }
 
+/* 点阵彩虹流光灯 (Dot Rainbow Flow Rhythm) */
+.mode-music-dot-rainbow-flow .preview-light,
+.mode-music-dot-rainbow-flow .preview-glow {
+  display: none !important;
+}
+.mode-music-dot-rainbow-flow .preview-track {
+  stroke: #1a1a1a !important;
+  opacity: 0.15;
+}
+.is-rainbow.mode-music-dot-rainbow-flow .rainbow-flow-layer path {
+  display: none !important;
+}
+.mode-music-dot-rainbow-flow #ledLayer circle {
+  display: block !important;
+}
+
 /* 3. 涟漪律动 (Ripple Rhythm) */
 .mode-music-ref-ripple .preview-light,
 .mode-music-ref-ripple .preview-light-alt {
