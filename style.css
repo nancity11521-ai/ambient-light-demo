@@ -1756,6 +1756,9 @@ h1 {
 .is-rainbow.mode-music-dot-rainbow-flow .rainbow-flow-layer path {
   display: none !important;
 }
+.mode-music-dot-rainbow-flow .led-layer {
+  display: block !important;
+}
 .mode-music-dot-rainbow-flow #ledLayer circle {
   display: block !important;
 }
@@ -1771,6 +1774,9 @@ h1 {
 }
 .is-rainbow.mode-music-dot-ripple-breath .rainbow-flow-layer path {
   display: none !important;
+}
+.mode-music-dot-ripple-breath .led-layer {
+  display: block !important;
 }
 .mode-music-dot-ripple-breath #ledLayer circle {
   display: block !important;
