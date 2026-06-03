@@ -258,13 +258,21 @@
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
-                <filter id="pureGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="6.5" result="blur" />
-                  <feColorMatrix
-                    in="blur"
-                    type="matrix"
-                    values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.95 0"
-                  />
+                <!-- 双重融合发光滤镜：1.5px高斯模糊擦除矢量硬描边以提供明亮光心 + 7.0px高斯模糊提供宽广柔和的投射光圈 -->
+                <filter id="rainbowGlow" x="-60%" y="-60%" width="220%" height="220%">
+                  <!-- 1. 产生大模糊的环境光晕 -->
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="7.0" result="blurAmbient" />
+                  <feColorMatrix in="blurAmbient" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.50 0" result="ambient" />
+                  
+                  <!-- 2. 产生微模糊的实体光心 (去硬质描边，保留高清晰彩色核心) -->
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blurCore" />
+                  <feColorMatrix in="blurCore" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.96 0" result="core" />
+                  
+                  <!-- 3. 双层融合输出 -->
+                  <feMerge>
+                    <feMergeNode in="ambient" />
+                    <feMergeNode in="core" />
+                  </feMerge>
                 </filter>
               </defs>
               <path id="previewTrack" class="preview-track" />

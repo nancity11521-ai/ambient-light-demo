@@ -1741,16 +1741,16 @@ h1 {
 
 /* 平滑彩虹流光灯 (Rainbow Flow Rhythm) */
 .mode-music-rainbow-flow .preview-light {
-  display: none !important; /* 去除硬边描边 */
-}
-.mode-music-rainbow-flow .preview-glow {
   display: block !important;
   stroke: rgb(var(--light-rgb)) !important;
   stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
   stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.95);
-  stroke-width: 20px; /* 宽条发光 */
-  filter: url("#pureGlow") !important; /* 强制只做高斯模糊，彻底去掉硬边描边，且色彩极其清晰 */
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
+  stroke-width: 13px; /* 13px 光心 */
+  filter: url("#rainbowGlow") !important; /* 双重融合发光，完全擦除硬描边，且色彩极致鲜亮清晰 */
+}
+.mode-music-rainbow-flow .preview-glow {
+  display: none !important; /* 隐藏独立的大辉光层，直接由滤镜内部完美渲染出来 */
 }
 .mode-music-rainbow-flow .preview-track {
   display: none !important;
@@ -1771,23 +1771,23 @@ h1 {
   stroke: url("#rainbowStroke") !important;
   stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
   stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.95);
-  stroke-width: 20px; /* 宽条发光 */
-  filter: url("#pureGlow") !important; /* 彻底去硬描边，色彩饱和鲜艳 */
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
+  stroke-width: 13px; /* 13px 光心 */
+  filter: url("#rainbowGlow") !important; /* 顺时针彩虹顺滑发光，无描边，颜色高清晰 */
 }
 
 /* 平滑对称涟漪灯 (Symmetric Ripple Breath Rhythm) */
 .mode-music-ripple-breath .preview-light {
-  display: none !important; /* 去除硬边描边 */
-}
-.mode-music-ripple-breath .preview-glow {
   display: block !important;
   stroke: url("#rippleSymmetricStroke") !important;
   stroke-dasharray: var(--music-ripple-width) 9999px;
   stroke-dashoffset: var(--music-ripple-offset);
-  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.95);
-  stroke-width: 20px; /* 宽条发光 */
-  filter: url("#pureGlow") !important; /* 彻底去硬描边，色彩饱和鲜艳 */
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  stroke-width: 13px; /* 13px 光心 */
+  filter: url("#rainbowGlow") !important; /* 对称平衡顺滑发光，无描边，颜色高清晰 */
+}
+.mode-music-ripple-breath .preview-glow {
+  display: none !important; /* 隐藏独立的大辉光层，交由双重融合滤镜自动生成 */
 }
 .mode-music-ripple-breath .preview-track {
   display: none !important;
