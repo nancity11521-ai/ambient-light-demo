@@ -75,8 +75,8 @@ const musicEffects = [
   { id: "music-tri-color-breathe", name: "三色律动呼吸", desc: "三色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-quad-color-breathe", name: "四色律动呼吸", desc: "四色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-ring-chase", name: "环形流光跑马灯", desc: "车载环形流光跑马灯，明暗分段沿环身循环流转" },
-  { id: "music-dot-rainbow-flow", name: "点阵彩虹流光灯", desc: "彩虹光弧沿点阵圆周平滑旋转，未点亮区域保留暗灰灯珠质感" },
-  { id: "music-dot-ripple-breath", name: "点阵对称涟漪灯", desc: "光波自底部对称向两侧循环扩散，蓝青过渡到绿黄橙色，呈现呼吸波纹" },
+  { id: "music-rainbow-flow", name: "平滑彩虹流光灯", desc: "彩虹光弧沿圆周平滑旋转，尾部柔和衰减，未点亮区域保留暗灰底轨" },
+  { id: "music-ripple-breath", name: "平滑对称涟漪灯", desc: "光波自底部对称向两侧循环扩散，蓝青过渡到绿黄橙色，呈现平滑呼吸波纹" },
 ];
 
 const scenarios = [
@@ -1379,137 +1379,62 @@ function analyzeAudioFrame() {
     
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
-  }
-
-  // Handle effect-specific active JS-driven effects
-  if (effectId === "music-dot-rainbow-flow") {
-    // 点阵彩虹流光灯
+  } else if (effectId === "music-rainbow-flow") {
+    // 平滑彩虹流光灯：渐变光弧沿圆周平滑旋转
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
-    // 一阶差分
-    if (window.dotRainbowEnergy === undefined) {
-      window.dotRainbowEnergy = musicEnergy;
+    // 非线性对比度亮度
+    const minOpacity = 0.26;
+    const maxOpacity = 1.0;
+    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
+    root.style.setProperty("--music-rainbow-flow-opacity", finalOpacity.toFixed(3));
+    
+    // 累加旋转偏移量 (在 4 秒一周的基准上，高能时转速变快)
+    if (window.rainbowFlowOffset === undefined) {
+      window.rainbowFlowOffset = 0.0;
     }
-    const energyDelta = musicEnergy - window.dotRainbowEnergy;
-    window.dotRainbowEnergy = musicEnergy;
-    
-    // 累加旋转相位 (在 4 秒一周的基础上，高能时转速变快)
-    if (window.dotRainbowPhase === undefined) {
-      window.dotRainbowPhase = 0.0;
+    const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
+    const rotateSpeed = (pathLength / 4.0) + musicEnergy * 120;
+    window.rainbowFlowOffset = (window.rainbowFlowOffset - rotateSpeed * userSpeed * dt);
+    if (Math.abs(window.rainbowFlowOffset) > pathLength) {
+      window.rainbowFlowOffset = window.rainbowFlowOffset % pathLength;
     }
-    const baseSpeed = 0.25; // 1.0 / 4s = 0.25 转每秒 (4秒一周)
-    const energySpeed = musicEnergy * 0.16; // 随能量提速
-    window.dotRainbowPhase += (baseSpeed + energySpeed) * userSpeed * dt;
-    window.dotRainbowPhase = window.dotRainbowPhase % 1.0;
-    
-    // 点亮区域比例 (60% 圈，即约 216°)
-    const litRatio = 0.60;
-    
-    const totalLeds = ledConfig.groups * ledConfig.perGroup;
-    const leds = ledLayer.querySelectorAll("circle");
-    
-    leds.forEach((led, idx) => {
-      const ledPercent = idx / totalLeds;
-      
-      // 计算在旋转坐标系下的相对位置
-      let relPercent = (ledPercent - window.dotRainbowPhase + 1.0) % 1.0;
-      
-      if (relPercent <= litRatio) {
-        // --- 点亮区域 (彩虹渐变发光段) ---
-        const p = relPercent / litRatio; // [0.0, 1.0] 的亮区相对位置
-        
-        // 依次过渡为蓝、青、绿、黄、橙、红、粉、紫，再回到蓝色 (色相递减)
-        const hue = (240 - p * 360 + 360) % 360;
-        
-        // 边缘衰减：头部淡入 (前 12%)，尾部逐渐变暗 (后 32%)
-        let opacityFactor = 1.0;
-        if (p < 0.12) {
-          opacityFactor = p / 0.12;
-        } else if (p > 0.68) {
-          opacityFactor = (1.0 - p) / 0.32;
-        }
-        
-        // 亮度随音乐能量闪烁律动
-        const minOpacity = 0.35;
-        const maxOpacity = 1.0;
-        const currentOpacity = (minOpacity + musicEnergy * (maxOpacity - minOpacity)) * opacityFactor;
-        
-        led.style.fill = `hsl(${hue}, 100%, 60%)`;
-        led.style.opacity = currentOpacity.toFixed(3);
-        led.style.r = "3.2"; // 稍微膨胀发光灯珠
-        led.style.filter = `drop-shadow(0 0 5px hsl(${hue}, 100%, 65%))`;
-      } else {
-        // --- 未点亮区域 (深灰点阵) ---
-        led.style.fill = "#2d2d2d";
-        led.style.opacity = "0.45"; // 保留暗灰色，呈现未点亮灯珠质感
-        led.style.r = "2.3"; // 稍微缩回
-        led.style.filter = "none";
-      }
-    });
+    root.style.setProperty("--music-rainbow-flow-offset", window.rainbowFlowOffset.toFixed(1));
 
-  } else if (effectId === "music-dot-ripple-breath") {
-    // 点阵对称涟漪灯：光波自底部对称向两侧循环扩散
+  } else if (effectId === "music-ripple-breath") {
+    // 平滑对称涟漪灯：光波自底部对称向两侧循环扩散
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 非线性明暗对比
+    const minOpacity = 0.26;
+    const maxOpacity = 1.0;
+    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
+    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
     
     // 累加时间相位 (每 1 秒左右完成一次循环)
-    if (window.dotRipplePhase === undefined) {
-      window.dotRipplePhase = 0.0;
+    if (window.smoothRipplePhase === undefined) {
+      window.smoothRipplePhase = 0.0;
     }
-    // 基础流速 + 能量加速
     const speedFactor = 1.0 + musicEnergy * 0.45;
-    window.dotRipplePhase += speedFactor * userSpeed * dt;
+    window.smoothRipplePhase += speedFactor * userSpeed * dt;
     
-    // 正弦呼吸波 (值域 [0, 1])
-    const osc = (Math.sin(window.dotRipplePhase * 2.0 * Math.PI) + 1.0) / 2.0;
+    // 正弦呼吸波 [0, 1]
+    const osc = (Math.sin(window.smoothRipplePhase * 2.0 * Math.PI) + 1.0) / 2.0;
     
-    // 自适应扩散范围：窄弧 0.12 (86°)，宽弧 0.38 (273°)，加能量瞬态脉冲拉伸 (最高达 0.48)
+    // 扩散范围：窄弧 0.12 (86°)，宽弧 0.38 (273°)，加能量瞬态脉冲拉伸 (最高达 0.48)
     const baseRange = 0.12;
     const maxRange = 0.38;
     const litRange = Math.max(baseRange, Math.min(0.48, baseRange + osc * (maxRange - baseRange) + musicEnergy * 0.10));
     
-    const totalLeds = ledConfig.groups * ledConfig.perGroup;
-    const leds = ledLayer.querySelectorAll("circle");
+    const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
+    const w = litRange * pathLength; // 亮区单侧宽度
+    const activeWidth = 2 * w; // 亮区总跨度
+    const offset = w - pathLength * 0.5; // 模式偏移量 (将起点移到底部)
     
-    leds.forEach((led, idx) => {
-      const ledPercent = idx / totalLeds;
-      
-      // 距离底部 6点钟 (ledPercent = 0.5) 的最短对称圆周距离，区间为 [0.0, 0.5]
-      let dist = Math.abs(ledPercent - 0.5);
-      if (dist > 0.5) {
-        dist = 1.0 - dist;
-      }
-      
-      if (dist <= litRange) {
-        // --- 点亮区域 (对称发光段) ---
-        const p = dist / litRange; // 距底部相对位置 [0.0, 1.0]
-        
-        // 颜色映射：底部深蓝/亮蓝，中间青/绿，边缘过渡到黄/橙黄 (HSL 逆时针色相：230 -> 35)
-        const hue = 230 - p * 195;
-        
-        // 边缘消融：在最梢部边缘 15% 区间柔和淡出
-        let opacityFactor = 1.0;
-        if (p > 0.85) {
-          opacityFactor = (1.0 - p) / 0.15;
-        }
-        
-        // 亮度耦合：底部常驻蓝色保持亮起，边缘随呼吸与能量明暗变换
-        const minOpacity = 0.35;
-        const maxOpacity = 1.0;
-        const currentOpacity = (minOpacity + musicEnergy * (maxOpacity - minOpacity)) * opacityFactor;
-        
-        led.style.fill = `hsl(${hue}, 100%, 60%)`;
-        led.style.opacity = currentOpacity.toFixed(3);
-        led.style.r = "3.2"; // 稍微膨胀发光灯珠
-        led.style.filter = `drop-shadow(0 0 5px hsl(${hue}, 100%, 65%))`;
-      } else {
-        // --- 未点亮区域 (深灰点阵) ---
-        led.style.fill = "#2d2d2d";
-        led.style.opacity = "0.45"; // 保留暗灰色，呈现未点亮灯珠质感
-        led.style.r = "2.3"; // 稍微缩回
-        led.style.filter = "none";
-      }
-    });
-
+    root.style.setProperty("--music-ripple-width", activeWidth.toFixed(1));
+    root.style.setProperty("--music-ripple-offset", offset.toFixed(1));
   } else if (effectId === "music-spectrum-wave") {
     // Spectrum Wave: LED bulbs scale and flash dramatically on frequency channels!
     const totalLeds = ledConfig.groups * ledConfig.perGroup;

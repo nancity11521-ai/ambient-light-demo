@@ -1744,42 +1744,52 @@ h1 {
   filter: drop-shadow(0 0 var(--music-glow) var(--music-breathe-color));
 }
 
-/* 点阵彩虹流光灯 (Dot Rainbow Flow Rhythm) */
-.mode-music-dot-rainbow-flow .preview-light,
-.mode-music-dot-rainbow-flow .preview-glow {
+/* 平滑彩虹流光灯 (Rainbow Flow Rhythm) */
+.mode-music-rainbow-flow .preview-light {
+  display: none !important; /* 彩虹流光直接使用 rainbow-flow-layer 以展现高质感多色渐变 */
+}
+.mode-music-rainbow-flow .preview-glow {
   display: none !important;
 }
-.mode-music-dot-rainbow-flow .preview-track {
+.mode-music-rainbow-flow .preview-track {
   stroke: #1a1a1a !important;
   opacity: 0.15;
 }
-.is-rainbow.mode-music-dot-rainbow-flow .rainbow-flow-layer path {
-  display: none !important;
-}
-.mode-music-dot-rainbow-flow .led-layer {
+.mode-music-rainbow-flow .rainbow-flow-layer path {
   display: block !important;
-}
-.mode-music-dot-rainbow-flow #ledLayer circle {
-  display: block !important;
+  stroke: url("#rainbowStroke") !important;
+  stroke-dasharray: calc(var(--path-length) * 0.6) calc(var(--path-length) * 0.4);
+  stroke-dashoffset: var(--music-rainbow-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
+  stroke-width: 14px;
+  filter: drop-shadow(0 0 var(--music-glow) rgb(255 180 50 / 0.62));
 }
 
-/* 点阵对称涟漪灯 (Dot Ripple Breath Rhythm) */
-.mode-music-dot-ripple-breath .preview-light,
-.mode-music-dot-ripple-breath .preview-glow {
-  display: none !important;
+/* 平滑对称涟漪灯 (Symmetric Ripple Breath Rhythm) */
+.mode-music-ripple-breath .preview-light {
+  display: block !important;
+  stroke: url("#rippleSymmetricStroke") !important;
+  stroke-dasharray: var(--music-ripple-width) 9999px;
+  stroke-dashoffset: var(--music-ripple-offset);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  stroke-width: 14px;
+  filter: drop-shadow(0 0 var(--music-glow) #2b85ff);
 }
-.mode-music-dot-ripple-breath .preview-track {
+.mode-music-ripple-breath .preview-glow {
+  display: block !important;
+  stroke: url("#rippleSymmetricStroke") !important;
+  stroke-dasharray: var(--music-ripple-width) 9999px;
+  stroke-dashoffset: var(--music-ripple-offset);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.85);
+  stroke-width: 26px; /* 完美发光大辉光 */
+  filter: drop-shadow(0 0 var(--music-glow) #2b85ff);
+}
+.mode-music-ripple-breath .preview-track {
   stroke: #1a1a1a !important;
   opacity: 0.15;
 }
-.is-rainbow.mode-music-dot-ripple-breath .rainbow-flow-layer path {
-  display: none !important;
-}
-.mode-music-dot-ripple-breath .led-layer {
-  display: block !important;
-}
-.mode-music-dot-ripple-breath #ledLayer circle {
-  display: block !important;
+.is-rainbow.mode-music-ripple-breath .rainbow-flow-layer path {
+  display: none !important; /* 涟漪灯强制使用专属对称渐变，不与普通彩虹混淆 */
 }
 
 /* 3. 涟漪律动 (Ripple Rhythm) */
