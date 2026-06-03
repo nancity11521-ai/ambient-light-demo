@@ -1741,29 +1741,22 @@ h1 {
 
 /* 平滑彩虹流光灯 (Rainbow Flow Rhythm) */
 .mode-music-rainbow-flow .preview-light {
-  display: block !important;
-  stroke: rgb(var(--light-rgb)) !important;
-  stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
-  stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
-  stroke-width: 14px;
-  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
+  display: none !important; /* 去除硬边描边 */
 }
 .mode-music-rainbow-flow .preview-glow {
   display: block !important;
   stroke: rgb(var(--light-rgb)) !important;
   stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
   stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.85);
-  stroke-width: 26px; /* 完美发光大辉光 */
-  filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.95);
+  stroke-width: 20px; /* 宽条发光 */
+  filter: url("#pureGlow") !important; /* 强制只做高斯模糊，彻底去掉硬边描边，且色彩极其清晰 */
 }
 .mode-music-rainbow-flow .preview-track {
-  stroke: #1a1a1a !important;
-  opacity: 0.15;
+  display: none !important;
 }
 .mode-music-rainbow-flow .rainbow-flow-layer path {
-  display: none !important; /* 默认单色模式，隐藏彩色图层 */
+  display: none !important; 
 }
 
 /* 当开启彩色流动 (.is-rainbow) 时，切换为高质感多色渐变 */
@@ -1778,36 +1771,29 @@ h1 {
   stroke: url("#rainbowStroke") !important;
   stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
   stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
-  stroke-width: 14px;
-  filter: drop-shadow(0 0 var(--music-glow) rgb(255 180 50 / 0.62));
+  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity) * 0.95);
+  stroke-width: 20px; /* 宽条发光 */
+  filter: url("#pureGlow") !important; /* 彻底去硬描边，色彩饱和鲜艳 */
 }
 
 /* 平滑对称涟漪灯 (Symmetric Ripple Breath Rhythm) */
 .mode-music-ripple-breath .preview-light {
-  display: block !important;
-  stroke: url("#rippleSymmetricStroke") !important;
-  stroke-dasharray: var(--music-ripple-width) 9999px;
-  stroke-dashoffset: var(--music-ripple-offset);
-  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
-  stroke-width: 14px;
-  filter: drop-shadow(0 0 var(--music-glow) #2b85ff);
+  display: none !important; /* 去除硬边描边 */
 }
 .mode-music-ripple-breath .preview-glow {
   display: block !important;
   stroke: url("#rippleSymmetricStroke") !important;
   stroke-dasharray: var(--music-ripple-width) 9999px;
   stroke-dashoffset: var(--music-ripple-offset);
-  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.85);
-  stroke-width: 26px; /* 完美发光大辉光 */
-  filter: drop-shadow(0 0 var(--music-glow) #2b85ff);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity) * 0.95);
+  stroke-width: 20px; /* 宽条发光 */
+  filter: url("#pureGlow") !important; /* 彻底去硬描边，色彩饱和鲜艳 */
 }
 .mode-music-ripple-breath .preview-track {
-  stroke: #1a1a1a !important;
-  opacity: 0.15;
+  display: none !important;
 }
 .is-rainbow.mode-music-ripple-breath .rainbow-flow-layer path {
-  display: none !important; /* 涟漪灯强制使用专属对称渐变，不与普通彩虹混淆 */
+  display: none !important; 
 }
 
 /* 3. 涟漪律动 (Ripple Rhythm) */
