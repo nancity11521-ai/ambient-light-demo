@@ -1091,6 +1091,31 @@ function analyzeAudioFrame() {
   }
   root.style.setProperty("--music-flow-offset", musicFlowOffset.toFixed(1));
 
+  // --- SVG 渐变动态旋转流动 (实现渐变流色而非静止，且流速跟随音乐能量剧烈变化) ---
+  const rainbowStroke = document.querySelector("#rainbowStroke");
+  const rippleSymmetricStroke = document.querySelector("#rippleSymmetricStroke");
+  const musicEnergyForRotation = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+  
+  if (rainbowStroke) {
+    if (window.rainbowColorAngle === undefined) {
+      window.rainbowColorAngle = 0.0;
+    }
+    const baseFlowSpeed = 22.0; // 基础慢流速度
+    const activeFlowSpeed = baseFlowSpeed + musicEnergyForRotation * 130.0; // 重拍律动加速
+    window.rainbowColorAngle = (window.rainbowColorAngle + activeFlowSpeed * userSpeed * dt) % 360;
+    rainbowStroke.setAttribute("gradientTransform", `rotate(${window.rainbowColorAngle.toFixed(1)}, 150, 150)`);
+  }
+  
+  if (rippleSymmetricStroke) {
+    if (window.rippleColorAngle === undefined) {
+      window.rippleColorAngle = 0.0;
+    }
+    const baseFlowSpeed = 25.0; // 基础流速
+    const activeFlowSpeed = baseFlowSpeed + musicEnergyForRotation * 150.0; // 重拍律动加速
+    window.rippleColorAngle = (window.rippleColorAngle + activeFlowSpeed * userSpeed * dt) % 360;
+    rippleSymmetricStroke.setAttribute("gradientTransform", `rotate(${window.rippleColorAngle.toFixed(1)}, 150, 150)`);
+  }
+
   const effectId = currentEffect.id;
 
   // 3. Music Breathe Phase: cycle rate adapts continuously to music speed & bass hits!
@@ -1392,9 +1417,9 @@ function analyzeAudioFrame() {
     
     const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
     
-    // 使用非线性指数压缩，使得大部分音量律动保持在半圆（50%）以内，且最大范围限制在约 75% 圈以避免频繁闭合
+    // 使用非线性指数压缩，使得大部分音量律动保持在半圆（50%）以内，且最大范围限制在约 57% 圈以避免频繁闭合
     const baseLitPercent = 0.05;
-    const maxScalePercent = 0.70;
+    const maxScalePercent = 0.52;
     const targetWidth = (baseLitPercent + Math.pow(musicEnergy, 2.0) * maxScalePercent) * pathLength;
     const easing = Math.min(1.0, dt * 15.0); // 15.0Hz 阻尼平滑过滤
     if (window.rainbowFlowWidth === undefined) {
@@ -1425,10 +1450,11 @@ function analyzeAudioFrame() {
     // 正弦呼吸波 [0, 1]
     const osc = (Math.sin(window.smoothRipplePhase * 2.0 * Math.PI) + 1.0) / 2.0;
     
-    // 扩散范围：窄弧 0.12 (86°)，宽弧 0.38 (273°)，加能量瞬态脉冲拉伸 (最高达 0.48)
-    const baseRange = 0.12;
-    const maxRange = 0.38;
-    const litRange = Math.max(baseRange, Math.min(0.48, baseRange + osc * (maxRange - baseRange) + musicEnergy * 0.10));
+    // 压缩扩散范围：单侧最小 5% 长度，呼吸振荡单侧最大 20% 长度，能量额外最大推动 12% 长度。大部分歌均填不满圆。
+    const baseRange = 0.05;
+    const maxRange = 0.20;
+    const energyBoost = Math.pow(musicEnergy, 1.8) * 0.12;
+    const litRange = baseRange + osc * (maxRange - baseRange) + energyBoost;
     
     const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
     const w = litRange * pathLength; // 亮区单侧宽度
