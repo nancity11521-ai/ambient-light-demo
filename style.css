@@ -1726,6 +1726,24 @@ h1 {
   filter: drop-shadow(0 0 var(--music-glow) rgb(var(--light-rgb)));
 }
 
+/* 环形流光跑马灯 (Ring Chase Rhythm) */
+.mode-music-ring-chase .preview-light {
+  stroke: var(--music-breathe-color);
+  stroke-dasharray: calc(var(--path-length) * 0.5) calc(var(--path-length) * 0.5);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  stroke-width: 14px;
+  filter: drop-shadow(0 0 var(--music-glow) var(--music-breathe-color));
+}
+.is-rainbow.mode-music-ring-chase .rainbow-flow-layer path {
+  display: block;
+  stroke-dasharray: calc(var(--path-length) * 0.5) calc(var(--path-length) * 0.5);
+  stroke-dashoffset: var(--music-flow-offset);
+  opacity: calc(var(--intensity) * var(--music-breathe-opacity));
+  stroke-width: 14px;
+  filter: drop-shadow(0 0 var(--music-glow) var(--music-breathe-color));
+}
+
 /* 3. 涟漪律动 (Ripple Rhythm) */
 .mode-music-ref-ripple .preview-light,
 .mode-music-ref-ripple .preview-light-alt {

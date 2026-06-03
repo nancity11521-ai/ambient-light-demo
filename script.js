@@ -74,6 +74,7 @@ const musicEffects = [
   { id: "music-dual-color-breathe", name: "双色律动呼吸", desc: "双色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-tri-color-breathe", name: "三色律动呼吸", desc: "三色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-quad-color-breathe", name: "四色律动呼吸", desc: "四色呼吸跟随音乐节奏和亮度律动" },
+  { id: "music-ring-chase", name: "环形流光跑马灯", desc: "车载环形流光跑马灯，明暗分段沿环身循环流转" },
 ];
 
 const scenarios = [
@@ -1308,6 +1309,69 @@ function analyzeAudioFrame() {
       activeColor = interpolateColor(colors[2], colors[3], finalProgress - 2.0);
     } else {
       // 蓝色 (#2b85ff) -> 青色 (#33e6c5)
+      activeColor = interpolateColor(colors[3], colors[0], finalProgress - 3.0);
+    }
+    
+    root.style.setProperty("--music-breathe-color", activeColor);
+    root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+    
+  } else if (effectId === "music-ring-chase") {
+    // 环形流光跑马灯：色彩同样采用 4色「色彩能量共鸣与瞬态冲击响应引擎」
+    const colors = ["#33e6c5", "#ffd45f", "#36e67f", "#2b85ff"];
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 能量变化率 (一阶差分)
+    if (window.ringChaseEnergy === undefined) {
+      window.ringChaseEnergy = musicEnergy;
+    }
+    const energyDelta = musicEnergy - window.ringChaseEnergy;
+    window.ringChaseEnergy = musicEnergy;
+    
+    // 非线性高动态明暗对比度曲线
+    const minOpacity = 0.26;
+    const maxOpacity = 1.0;
+    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
+    
+    if (window.ringChaseBasePhase === undefined) {
+      window.ringChaseBasePhase = 0.0;
+    }
+    if (window.ringChaseCenter === undefined) {
+      window.ringChaseCenter = 0.0;
+    }
+    if (window.ringChaseRange === undefined) {
+      window.ringChaseRange = 0.45;
+    }
+    
+    // 瞬态脉冲直接推送
+    if (energyDelta > 0.07) {
+      window.ringChaseBasePhase += energyDelta * 1.5;
+    }
+    
+    const targetCenter = musicEnergy * 1.6;
+    const targetRange = 0.45 + musicEnergy * 1.55;
+    
+    const dampingFactor = 4.0 + Math.pow(Math.abs(energyDelta), 1.2) * 55.0;
+    
+    window.ringChaseCenter += (targetCenter - window.ringChaseCenter) * Math.min(1.0, dt * dampingFactor);
+    window.ringChaseRange += (targetRange - window.ringChaseRange) * Math.min(1.0, dt * dampingFactor);
+    
+    const baseSpeed = 0.9 * userSpeed;
+    const energySpeed = musicEnergy * 1.6 * userSpeed;
+    window.ringChaseBasePhase += (baseSpeed + energySpeed) * dt;
+    
+    const osc = Math.sin(window.ringChaseBasePhase);
+    let finalProgress = window.ringChaseCenter + osc * (window.ringChaseRange * 0.5);
+    finalProgress = (finalProgress + 4.0) % 4.0;
+    
+    let activeColor = colors[0];
+    if (finalProgress < 1.0) {
+      activeColor = interpolateColor(colors[0], colors[1], finalProgress);
+    } else if (finalProgress < 2.0) {
+      activeColor = interpolateColor(colors[1], colors[2], finalProgress - 1.0);
+    } else if (finalProgress < 3.0) {
+      activeColor = interpolateColor(colors[2], colors[3], finalProgress - 2.0);
+    } else {
       activeColor = interpolateColor(colors[3], colors[0], finalProgress - 3.0);
     }
     
