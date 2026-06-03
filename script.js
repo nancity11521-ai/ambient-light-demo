@@ -1228,50 +1228,75 @@ function analyzeAudioFrame() {
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
     
-  } else if (effectId.startsWith("music-") && effectId.includes("-color-breathe")) {
-    // 4色声效保持原先时钟过渡逻辑
-    let numColors = 4;
-    let colors = ["#7cf26d", "#61a8ff", "#f43f5e", "#ffd45f"];
-
-    // Auto-initialize if colors changed or empty
-    if (!colors.includes(prevBreatheColor) || !colors.includes(targetBreatheColor)) {
-      currentBreatheColorIdx = 0;
-      prevBreatheColor = colors[0];
-      targetBreatheColor = colors[0];
-      musicBreatheTimer = 0;
-      musicBreathePhase = 0;
-    }
-
-    // Make light intensity dynamically couple with music energy
-    const minOpacity = 0.35;
-    const maxOpacity = 0.98;
-    const rhythmStrength = energy * 0.4 + bassEnergy * 0.6;
-    const dynamicOpacity = minOpacity + rhythmStrength * (maxOpacity - minOpacity);
-
-    const targetInterval = 1.0; // 4色保持每 1.0 秒一切换
-
-    musicBreatheTimer += dt * userSpeed;
-    if (musicBreatheTimer >= targetInterval) {
-      musicBreatheTimer = musicBreatheTimer % targetInterval;
-      const prevIdx = currentBreatheColorIdx;
-      currentBreatheColorIdx = (prevIdx + 1) % numColors;
-      prevBreatheColor = colors[prevIdx];
-      targetBreatheColor = colors[currentBreatheColorIdx];
-    }
-
-    const blendDuration = 0.4;
-    const progress = Math.min(1.0, musicBreatheTimer / blendDuration);
-    const activeColor = interpolateColor(
-      prevBreatheColor,
-      targetBreatheColor,
-      progress
-    );
+  } else if (effectId === "music-quad-color-breathe" || (effectId.startsWith("music-") && effectId.includes("-color-breathe"))) {
+    const colors = ["#33e6c5", "#ffd45f", "#36e67f", "#2b85ff"]; // 青色、黄色、绿色、蓝色
     
-    const finalOpacity = dynamicOpacity;
-
+    // 联合捕获多频段实时能量 (音量、低音、中音、高音)，确保无论是重低音还是高频女声均能极其敏锐地感知！
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 升级为非线性高动态明暗对比度曲线：稍微增加明暗变化，暗部更深邃(0.26)，亮部更璀璨(1.0)
+    // 配合 1.25 次幂 Gamma 变换，小能量下有温润优雅的深呼吸感，重拍爆发时对比度更强烈！
+    const minOpacity = 0.26;
+    const maxOpacity = 1.0;
+    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
+    
+    // ========================================================
+    // 🌊 殿堂级「色彩能量共鸣引擎」 (全新4色流体时间耦合版)
+    // 根据颜色控制和调节能量大小，而不是单纯地用明暗表达：
+    // - 能量低 (Low Energy): 色彩中心靠拢在宁静收敛的青色 (#33e6c5) 和科技冰蓝 (#2b85ff) 附近，
+    //   同时色彩流动带宽极窄 (0.45)，仅在青-蓝之间进行温和雅致的缓慢流动，用“冷静幽美”表达低能。
+    // - 能量高 (High Energy): 色彩中心强力向极具张力的黄色与翠绿色 (#36e67f) 区间推移，
+    //   同时色彩流动带宽大幅撑开至宽幅 (2.00)，在黄-绿-蓝-青大对比色之间剧烈交替震荡，用“斑斓张力”释放音浪！
+    // - 物理阻尼过滤，保证中心偏置与振幅带宽平滑无缝地液体级过渡。
+    // ========================================================
+    if (window.quadColorBasePhase === undefined) {
+      window.quadColorBasePhase = 0.0;
+    }
+    if (window.quadColorCenter === undefined) {
+      window.quadColorCenter = 0.0;
+    }
+    if (window.quadColorRange === undefined) {
+      window.quadColorRange = 0.45;
+    }
+    
+    // 1. 物理阻尼平滑计算色彩中心与张力带宽
+    // 低能靠近 0.0 (青色)；最高能量拉到 1.60 (黄绿交界)
+    const targetCenter = musicEnergy * 1.6;
+    // 低能仅 0.45 窄振幅；高能强力撑开至 2.00 宽振幅，色彩对撞极其强烈
+    const targetRange = 0.45 + musicEnergy * 1.55;
+    
+    window.quadColorCenter += (targetCenter - window.quadColorCenter) * Math.min(1.0, dt * 9.5);
+    window.quadColorRange += (targetRange - window.quadColorRange) * Math.min(1.0, dt * 9.5);
+    
+    // 2. 简谐振荡角速度控制：高潮时波动频率也随之加快
+    const baseSpeed = 0.9 * userSpeed;
+    const energySpeed = musicEnergy * 1.6 * userSpeed;
+    window.quadColorBasePhase += (baseSpeed + energySpeed) * dt;
+    
+    // 3. 计算正弦平滑映射并进行四色环无缝包装 [0.0, 4.0]
+    const osc = Math.sin(window.quadColorBasePhase);
+    let finalProgress = window.quadColorCenter + osc * (window.quadColorRange * 0.5);
+    finalProgress = (finalProgress + 4.0) % 4.0;
+    
+    // 4. 四色环双线性无缝过渡
+    let activeColor = colors[0];
+    if (finalProgress < 1.0) {
+      // 青色 (#33e6c5) -> 黄色 (#ffd45f)
+      activeColor = interpolateColor(colors[0], colors[1], finalProgress);
+    } else if (finalProgress < 2.0) {
+      // 黄色 (#ffd45f) -> 绿色 (#36e67f)
+      activeColor = interpolateColor(colors[1], colors[2], finalProgress - 1.0);
+    } else if (finalProgress < 3.0) {
+      // 绿色 (#36e67f) -> 蓝色 (#2b85ff)
+      activeColor = interpolateColor(colors[2], colors[3], finalProgress - 2.0);
+    } else {
+      // 蓝色 (#2b85ff) -> 青色 (#33e6c5)
+      activeColor = interpolateColor(colors[3], colors[0], finalProgress - 3.0);
+    }
+    
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
-  }
 
   // Handle effect-specific active JS-driven effects
   if (effectId === "music-spectrum-wave") {
