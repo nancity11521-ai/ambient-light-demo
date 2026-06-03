@@ -1392,12 +1392,14 @@ function analyzeAudioFrame() {
     
     const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
     
-    // 平滑的一阶滤波器控制延伸长度：当能量最低时，亮起 5% 起点；最高时，延伸到 100%
-    if (window.rainbowFlowWidth === undefined) {
-      window.rainbowFlowWidth = 0.05 * pathLength;
-    }
-    const targetWidth = (0.05 + musicEnergy * 0.95) * pathLength;
+    // 使用非线性指数压缩，使得大部分音量律动保持在半圆（50%）以内，且最大范围限制在约 75% 圈以避免频繁闭合
+    const baseLitPercent = 0.05;
+    const maxScalePercent = 0.70;
+    const targetWidth = (baseLitPercent + Math.pow(musicEnergy, 2.0) * maxScalePercent) * pathLength;
     const easing = Math.min(1.0, dt * 15.0); // 15.0Hz 阻尼平滑过滤
+    if (window.rainbowFlowWidth === undefined) {
+      window.rainbowFlowWidth = baseLitPercent * pathLength;
+    }
     window.rainbowFlowWidth += (targetWidth - window.rainbowFlowWidth) * easing;
     
     root.style.setProperty("--music-rainbow-flow-width", window.rainbowFlowWidth.toFixed(1));
