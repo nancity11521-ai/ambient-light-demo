@@ -1760,6 +1760,22 @@ h1 {
   display: block !important;
 }
 
+/* 点阵对称涟漪灯 (Dot Ripple Breath Rhythm) */
+.mode-music-dot-ripple-breath .preview-light,
+.mode-music-dot-ripple-breath .preview-glow {
+  display: none !important;
+}
+.mode-music-dot-ripple-breath .preview-track {
+  stroke: #1a1a1a !important;
+  opacity: 0.15;
+}
+.is-rainbow.mode-music-dot-ripple-breath .rainbow-flow-layer path {
+  display: none !important;
+}
+.mode-music-dot-ripple-breath #ledLayer circle {
+  display: block !important;
+}
+
 /* 3. 涟漪律动 (Ripple Rhythm) */
 .mode-music-ref-ripple .preview-light,
 .mode-music-ref-ripple .preview-light-alt {

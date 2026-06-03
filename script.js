@@ -76,6 +76,7 @@ const musicEffects = [
   { id: "music-quad-color-breathe", name: "四色律动呼吸", desc: "四色呼吸跟随音乐节奏和亮度律动" },
   { id: "music-ring-chase", name: "环形流光跑马灯", desc: "车载环形流光跑马灯，明暗分段沿环身循环流转" },
   { id: "music-dot-rainbow-flow", name: "点阵彩虹流光灯", desc: "彩虹光弧沿点阵圆周平滑旋转，未点亮区域保留暗灰灯珠质感" },
+  { id: "music-dot-ripple-breath", name: "点阵对称涟漪灯", desc: "光波自底部对称向两侧循环扩散，蓝青过渡到绿黄橙色，呈现呼吸波纹" },
 ];
 
 const scenarios = [
@@ -1429,6 +1430,69 @@ function analyzeAudioFrame() {
         }
         
         // 亮度随音乐能量闪烁律动
+        const minOpacity = 0.35;
+        const maxOpacity = 1.0;
+        const currentOpacity = (minOpacity + musicEnergy * (maxOpacity - minOpacity)) * opacityFactor;
+        
+        led.style.fill = `hsl(${hue}, 100%, 60%)`;
+        led.style.opacity = currentOpacity.toFixed(3);
+        led.style.r = "3.2"; // 稍微膨胀发光灯珠
+        led.style.filter = `drop-shadow(0 0 5px hsl(${hue}, 100%, 65%))`;
+      } else {
+        // --- 未点亮区域 (深灰点阵) ---
+        led.style.fill = "#2d2d2d";
+        led.style.opacity = "0.45"; // 保留暗灰色，呈现未点亮灯珠质感
+        led.style.r = "2.3"; // 稍微缩回
+        led.style.filter = "none";
+      }
+    });
+
+  } else if (effectId === "music-dot-ripple-breath") {
+    // 点阵对称涟漪灯：光波自底部对称向两侧循环扩散
+    const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+    
+    // 累加时间相位 (每 1 秒左右完成一次循环)
+    if (window.dotRipplePhase === undefined) {
+      window.dotRipplePhase = 0.0;
+    }
+    // 基础流速 + 能量加速
+    const speedFactor = 1.0 + musicEnergy * 0.45;
+    window.dotRipplePhase += speedFactor * userSpeed * dt;
+    
+    // 正弦呼吸波 (值域 [0, 1])
+    const osc = (Math.sin(window.dotRipplePhase * 2.0 * Math.PI) + 1.0) / 2.0;
+    
+    // 自适应扩散范围：窄弧 0.12 (86°)，宽弧 0.38 (273°)，加能量瞬态脉冲拉伸 (最高达 0.48)
+    const baseRange = 0.12;
+    const maxRange = 0.38;
+    const litRange = Math.max(baseRange, Math.min(0.48, baseRange + osc * (maxRange - baseRange) + musicEnergy * 0.10));
+    
+    const totalLeds = ledConfig.groups * ledConfig.perGroup;
+    const leds = ledLayer.querySelectorAll("circle");
+    
+    leds.forEach((led, idx) => {
+      const ledPercent = idx / totalLeds;
+      
+      // 距离底部 6点钟 (ledPercent = 0.5) 的最短对称圆周距离，区间为 [0.0, 0.5]
+      let dist = Math.abs(ledPercent - 0.5);
+      if (dist > 0.5) {
+        dist = 1.0 - dist;
+      }
+      
+      if (dist <= litRange) {
+        // --- 点亮区域 (对称发光段) ---
+        const p = dist / litRange; // 距底部相对位置 [0.0, 1.0]
+        
+        // 颜色映射：底部深蓝/亮蓝，中间青/绿，边缘过渡到黄/橙黄 (HSL 逆时针色相：230 -> 35)
+        const hue = 230 - p * 195;
+        
+        // 边缘消融：在最梢部边缘 15% 区间柔和淡出
+        let opacityFactor = 1.0;
+        if (p > 0.85) {
+          opacityFactor = (1.0 - p) / 0.15;
+        }
+        
+        // 亮度耦合：底部常驻蓝色保持亮起，边缘随呼吸与能量明暗变换
         const minOpacity = 0.35;
         const maxOpacity = 1.0;
         const currentOpacity = (minOpacity + musicEnergy * (maxOpacity - minOpacity)) * opacityFactor;
