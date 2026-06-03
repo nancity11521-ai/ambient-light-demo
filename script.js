@@ -1297,6 +1297,7 @@ function analyzeAudioFrame() {
     
     root.style.setProperty("--music-breathe-color", activeColor);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
+  }
 
   // Handle effect-specific active JS-driven effects
   if (effectId === "music-spectrum-wave") {
