@@ -297,11 +297,132 @@ function hexToRgb(hex) {
   };
 }
 
+function hexToHsl(hex) {
+  let { r, g, b } = hexToRgb(hex);
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  let l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
+}
+
+function updateAllGradients() {
+  // 1. 更新平滑对称涟漪渐变 (rippleSymmetricStroke)
+  // 按照“落日极光 (Sunset Aurora)”的高雅对称冷暖阶梯设计，以 0% 底部为明亮发光光心，两端渐隐
+  const rippleGradient = document.querySelector("#rippleSymmetricStroke");
+  if (rippleGradient) {
+    rippleGradient.removeAttribute("gradientTransform");
+    const stops = rippleGradient.querySelectorAll("stop");
+    if (stops.length >= 7) {
+      if (isRainbow) {
+        stops[0].setAttribute("stop-color", "#fcd34d"); // 0% (底部: 暖金)
+        stops[1].setAttribute("stop-color", "#f97316"); // 15% (暖橙)
+        stops[2].setAttribute("stop-color", "#ec4899"); // 35% (玫粉)
+        stops[3].setAttribute("stop-color", "#a855f7"); // 55% (紫罗兰)
+        stops[4].setAttribute("stop-color", "#6366f1"); // 75% (靛蓝)
+        stops[5].setAttribute("stop-color", "#06b6d4"); // 90% (冰青)
+        stops[6].setAttribute("stop-color", "#10b981"); // 100% (翠绿)
+      } else {
+        const baseColor = colorPicker.value || "#33e6c5";
+        const { h, s, l } = hexToHsl(baseColor);
+        // 智能单色 3D 浮雕光影渐变算法：根据色相方向智能偏移
+        let hOffset = 15;
+        if ((h >= 0 && h < 45) || h >= 315) {
+          hOffset = 15; // 暖红粉 -> 偏金黄
+        } else if (h >= 45 && h < 165) {
+          hOffset = 25; // 黄绿 -> 偏青蓝，防脏色
+        } else if (h >= 165 && h < 255) {
+          hOffset = -20; // 蓝色 -> 偏青绿
+        } else {
+          hOffset = 20; // 紫色 -> 偏暖粉
+        }
+
+        // 以底部中心 0% 为高光光心，两侧边缘 100% 渐隐，形成连贯的水波震荡立体感
+        stops[0].setAttribute("stop-color", `hsl(${(h + hOffset + 360) % 360}, ${Math.min(100, s + 5)}%, ${Math.min(96, l + 18)}%)`); // 0% 极亮高光点
+        stops[1].setAttribute("stop-color", `hsl(${(h + Math.round(hOffset / 2) + 360) % 360}, ${s}%, ${Math.min(94, l + 10)}%)`); // 15% 渐亮副色
+        stops[2].setAttribute("stop-color", `hsl(${h}, ${s}%, ${l}%)`); // 35% 主色
+        stops[3].setAttribute("stop-color", `hsl(${(h - Math.round(hOffset / 2) + 360) % 360}, ${s}%, ${Math.max(20, l - 5)}%)`); // 60% 微暗副色
+        stops[4].setAttribute("stop-color", `hsl(${h}, ${s}%, ${Math.max(15, l - 12)}%)`); // 85% 渐隐暗部
+        if (stops[5]) {
+          stops[5].setAttribute("stop-color", `hsl(${h}, ${s}%, ${Math.max(10, l - 18)}%)`); // 100% 边缘渐隐
+        }
+      }
+    }
+  }
+
+  // 2. 更新平滑彩虹流光渐变 (rainbowStroke)
+  // 设计为“极地之光 (Polaris Lights)”顶级冷暖流色，首尾完全衔接，消除旋转时的视觉跳跃
+  const rainbowGradient = document.querySelector("#rainbowStroke");
+  if (rainbowGradient) {
+    const stops = rainbowGradient.querySelectorAll("stop");
+    if (stops.length >= 9) {
+      if (isRainbow) {
+        stops[0].setAttribute("stop-color", "#fcd34d"); // 0% (暖金)
+        stops[1].setAttribute("stop-color", "#f97316"); // 12.5% (暖橙)
+        stops[2].setAttribute("stop-color", "#ec4899"); // 25% (玫粉)
+        stops[3].setAttribute("stop-color", "#a855f7"); // 37.5% (紫罗兰)
+        stops[4].setAttribute("stop-color", "#6366f1"); // 50% (靛蓝)
+        stops[5].setAttribute("stop-color", "#06b6d4"); // 62.5% (冰青)
+        stops[6].setAttribute("stop-color", "#10b981"); // 75% (翠绿)
+        stops[7].setAttribute("stop-color", "#84cc16"); // 87.5% (黄绿)
+        stops[8].setAttribute("stop-color", "#fcd34d"); // 100% (闭环: 暖金)
+      } else {
+        const baseColor = colorPicker.value || "#33e6c5";
+        const { h, s, l } = hexToHsl(baseColor);
+        
+        let hOffset = 15;
+        if ((h >= 0 && h < 45) || h >= 315) {
+          hOffset = 15;
+        } else if (h >= 45 && h < 165) {
+          hOffset = 25;
+        } else if (h >= 165 && h < 255) {
+          hOffset = -20;
+        } else {
+          hOffset = 20;
+        }
+
+        // 丝滑单色流体：首尾阴影暗色以强化发光立体感，中间高光，旋转无割裂缝
+        stops[0].setAttribute("stop-color", `hsl(${h}, ${s}%, ${Math.max(12, l - 12)}%)`);
+        stops[1].setAttribute("stop-color", `hsl(${h}, ${s}%, ${l}%)`);
+        stops[2].setAttribute("stop-color", `hsl(${(h + hOffset + 360) % 360}, ${Math.min(100, s + 5)}%, ${Math.min(96, l + 18)}%)`);
+        stops[3].setAttribute("stop-color", `hsl(${(h + hOffset + 360) % 360}, ${s}%, ${l}%)`);
+        stops[4].setAttribute("stop-color", `hsl(${h}, ${s}%, ${Math.max(12, l - 12)}%)`);
+      }
+    }
+  }
+}
+
 function setColor(hex) {
   const { r, g, b } = hexToRgb(hex);
   root.style.setProperty("--light", hex);
   root.style.setProperty("--light-rgb", `${r} ${g} ${b}`);
   colorPicker.value = hex;
+  updateAllGradients();
   updateSelectedSummary();
 }
 
@@ -311,6 +432,7 @@ function setRainbow(enabled) {
   rainbowToggle.classList.toggle("is-active", isRainbow);
   rainbowToggle.textContent = isRainbow ? "彩色开" : "彩色";
   buildRainbowFlow(lightPath.getAttribute("d"));
+  updateAllGradients();
   updateSelectedSummary();
 }
 
@@ -1095,25 +1217,24 @@ function analyzeAudioFrame() {
   const rainbowStroke = document.querySelector("#rainbowStroke");
   const rippleSymmetricStroke = document.querySelector("#rippleSymmetricStroke");
   const musicEnergyForRotation = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+  if (window.smoothedRotationEnergy === undefined) {
+    window.smoothedRotationEnergy = 0.0;
+  }
+  window.smoothedRotationEnergy += (musicEnergyForRotation - window.smoothedRotationEnergy) * Math.min(1.0, dt * 5.0); // 5.0Hz 慢阻尼平滑，带来类似“旋转飞轮”的顺畅物理惯性
   
   if (rainbowStroke) {
     if (window.rainbowColorAngle === undefined) {
       window.rainbowColorAngle = 0.0;
     }
     const baseFlowSpeed = 22.0; // 基础慢流速度
-    const activeFlowSpeed = baseFlowSpeed + musicEnergyForRotation * 130.0; // 重拍律动加速
+    const activeFlowSpeed = baseFlowSpeed + window.smoothedRotationEnergy * 130.0; // 重拍律动加速
     window.rainbowColorAngle = (window.rainbowColorAngle + activeFlowSpeed * userSpeed * dt) % 360;
     rainbowStroke.setAttribute("gradientTransform", `rotate(${window.rainbowColorAngle.toFixed(1)}, 150, 150)`);
   }
   
   if (rippleSymmetricStroke) {
-    if (window.rippleColorAngle === undefined) {
-      window.rippleColorAngle = 0.0;
-    }
-    const baseFlowSpeed = 25.0; // 基础流速
-    const activeFlowSpeed = baseFlowSpeed + musicEnergyForRotation * 150.0; // 重拍律动加速
-    window.rippleColorAngle = (window.rippleColorAngle + activeFlowSpeed * userSpeed * dt) % 360;
-    rippleSymmetricStroke.setAttribute("gradientTransform", `rotate(${window.rippleColorAngle.toFixed(1)}, 150, 150)`);
+    // 对称涟漪灯的渐变圆心必须固定在底部以保证左右对称的冷暖色散效果，不应绕中心旋转
+    rippleSymmetricStroke.removeAttribute("gradientTransform");
   }
 
   const effectId = currentEffect.id;
@@ -1408,10 +1529,16 @@ function analyzeAudioFrame() {
     // 平滑彩虹流光灯：固定12点钟顺时针延伸，根据音乐能量律动
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
     
+    // 引入阻尼平滑，消除瞬时闪烁
+    if (window.rainbowFlowEnergy === undefined) {
+      window.rainbowFlowEnergy = 0.0;
+    }
+    window.rainbowFlowEnergy += (musicEnergy - window.rainbowFlowEnergy) * Math.min(1.0, dt * 8.0); // 8.0Hz 阻尼平滑
+
     // 非线性对比度亮度
     const minOpacity = 0.26;
     const maxOpacity = 1.0;
-    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const contrastEnergy = Math.pow(window.rainbowFlowEnergy, 1.25);
     const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     root.style.setProperty("--music-rainbow-flow-opacity", finalOpacity.toFixed(3));
     
@@ -1420,7 +1547,7 @@ function analyzeAudioFrame() {
     // 使用非线性指数压缩，使得大部分音量律动保持在半圆（50%）以内，且最大范围限制在约 57% 圈以避免频繁闭合
     const baseLitPercent = 0.05;
     const maxScalePercent = 0.52;
-    const targetWidth = (baseLitPercent + Math.pow(musicEnergy, 2.0) * maxScalePercent) * pathLength;
+    const targetWidth = (baseLitPercent + Math.pow(window.rainbowFlowEnergy, 2.0) * maxScalePercent) * pathLength;
     const easing = Math.min(1.0, dt * 15.0); // 15.0Hz 阻尼平滑过滤
     if (window.rainbowFlowWidth === undefined) {
       window.rainbowFlowWidth = baseLitPercent * pathLength;
@@ -1432,11 +1559,17 @@ function analyzeAudioFrame() {
   } else if (effectId === "music-ripple-breath") {
     // 平滑对称涟漪灯：光波自底部对称向两侧循环扩散
     const musicEnergy = Math.min(1.0, Math.max(energy, bassEnergy, trebleEnergy, midEnergy));
+
+    // 引入阻尼平滑，消除瞬时闪烁
+    if (window.rippleBreathEnergy === undefined) {
+      window.rippleBreathEnergy = 0.0;
+    }
+    window.rippleBreathEnergy += (musicEnergy - window.rippleBreathEnergy) * Math.min(1.0, dt * 8.0); // 8.0Hz 阻尼平滑
     
     // 非线性明暗对比
     const minOpacity = 0.26;
     const maxOpacity = 1.0;
-    const contrastEnergy = Math.pow(musicEnergy, 1.25);
+    const contrastEnergy = Math.pow(window.rippleBreathEnergy, 1.25);
     const finalOpacity = minOpacity + contrastEnergy * (maxOpacity - minOpacity);
     root.style.setProperty("--music-breathe-opacity", finalOpacity.toFixed(3));
     
@@ -1444,7 +1577,7 @@ function analyzeAudioFrame() {
     if (window.smoothRipplePhase === undefined) {
       window.smoothRipplePhase = 0.0;
     }
-    const speedFactor = 1.0 + musicEnergy * 0.45;
+    const speedFactor = 1.0 + window.rippleBreathEnergy * 0.45;
     window.smoothRipplePhase += speedFactor * userSpeed * dt;
     
     // 正弦呼吸波 [0, 1]
@@ -1453,7 +1586,7 @@ function analyzeAudioFrame() {
     // 压缩扩散范围：单侧最小 5% 长度，呼吸振荡单侧最大 20% 长度，能量额外最大推动 12% 长度。大部分歌均填不满圆。
     const baseRange = 0.05;
     const maxRange = 0.20;
-    const energyBoost = Math.pow(musicEnergy, 1.8) * 0.12;
+    const energyBoost = Math.pow(window.rippleBreathEnergy, 1.8) * 0.12;
     const litRange = baseRange + osc * (maxRange - baseRange) + energyBoost;
     
     const pathLength = Number(root.style.getPropertyValue("--path-length")) || 900;
@@ -2168,6 +2301,181 @@ function boot() {
   setShape(currentShape.id);
   setEffect(currentEffect.id);
   applyPendingUploadedShape();
+  setupVideoRecorder();
+}
+
+let isVideoRecording = false;
+let videoMediaRecorder;
+let videoRecordedChunks = [];
+let videoRecordCanvas, videoRecordCtx;
+
+function startRecordingVideo() {
+  if (isVideoRecording) return;
+  isVideoRecording = true;
+  videoRecordedChunks = [];
+  
+  const recordBtn = document.getElementById('recordVideoBtn');
+  recordBtn.disabled = true;
+  recordBtn.style.background = '#555';
+  
+  videoRecordCanvas = document.createElement('canvas');
+  videoRecordCanvas.width = 600;
+  videoRecordCanvas.height = 600;
+  videoRecordCtx = videoRecordCanvas.getContext('2d');
+  
+  let cssText = "";
+  try {
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) {
+          cssText += rule.cssText + "\n";
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+  
+  const stream = videoRecordCanvas.captureStream(30); // 30 FPS
+  
+  let options = { mimeType: 'video/webm;codecs=vp9' };
+  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+    options = { mimeType: 'video/webm;codecs=vp8' };
+  }
+  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+    options = { mimeType: 'video/webm' };
+  }
+  
+  videoMediaRecorder = new MediaRecorder(stream, options);
+  
+  videoMediaRecorder.ondataavailable = (event) => {
+    if (event.data && event.data.size > 0) {
+      videoRecordedChunks.push(event.data);
+    }
+  };
+  
+  videoMediaRecorder.onstop = () => {
+    const blob = new Blob(videoRecordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const effectName = document.getElementById('modeName').textContent || '灯效';
+    a.download = `氛围灯-${effectName}-${Date.now()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    recordBtn.disabled = false;
+    recordBtn.style.background = 'linear-gradient(135deg, #a855f7, #6366f1)';
+    recordBtn.innerHTML = '<span>🎥</span> 录制并下载动效视频 (WebM)';
+    isVideoRecording = false;
+  };
+  
+  videoMediaRecorder.start();
+  
+  const targetSvg = document.querySelector('.light-canvas');
+  const startTime = Date.now();
+  const duration = 10000; // 录制时间延长至 10 秒
+  
+  function captureVideoFrame() {
+    if (!isVideoRecording) return;
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= duration) {
+      videoMediaRecorder.stop();
+      return;
+    }
+    
+    const remaining = Math.ceil((duration - elapsed) / 1000);
+    recordBtn.textContent = `正在录制中 (${remaining}s)...`;
+    
+    const clonedSvg = targetSvg.cloneNode(true);
+    
+    // 1. 扩大 viewBox 以容纳大发光滤镜，彻底避免四周被截断显示不全
+    clonedSvg.setAttribute("viewBox", "-70 -70 440 440");
+    
+    // 2. 固化页面渲染元素的当前瞬态样式 (解决 CSS Keyframes 动画在 Image 中不执行的问题)
+    const originalElements = targetSvg.querySelectorAll('path, circle, g');
+    const clonedElements = clonedSvg.querySelectorAll('path, circle, g');
+    for (let i = 0; i < originalElements.length; i++) {
+      const orig = originalElements[i];
+      const clone = clonedElements[i];
+      if (orig && clone) {
+        const style = getComputedStyle(orig);
+        clone.style.stroke = style.stroke;
+        clone.style.strokeWidth = style.strokeWidth;
+        clone.style.strokeDasharray = style.strokeDasharray;
+        clone.style.strokeDashoffset = style.strokeDashoffset;
+        clone.style.opacity = style.opacity;
+        clone.style.transform = style.transform;
+        clone.style.filter = style.filter;
+        clone.style.fill = style.fill;
+        clone.style.display = style.display;
+      }
+    }
+    
+    // 3. 拷贝 CSS 变量 (精准提取，杜绝全属性遍历以彻底消除 CPU 卡顿)
+    const computedStyles = getComputedStyle(document.documentElement);
+    let variablesText = ":root {\n";
+    const ambientLightVars = [
+      "--music-intensity",
+      "--music-breathe-color",
+      "--music-breathe-opacity",
+      "--music-rainbow-flow-opacity",
+      "--music-rainbow-flow-width",
+      "--music-ripple-width",
+      "--music-ripple-offset",
+      "--music-rotation",
+      "--music-flow-offset",
+      "--path-length",
+      "--intensity",
+      "--speed",
+      "--custom-span",
+      "--custom-gap",
+      "--custom-tempo"
+    ];
+    for (const prop of ambientLightVars) {
+      const val = computedStyles.getPropertyValue(prop);
+      if (val) {
+        variablesText += `  ${prop}: ${val};\n`;
+      }
+    }
+    variablesText += "}\n";
+    
+    const defs = clonedSvg.querySelector('defs') || clonedSvg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
+    const styleNode = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleNode.textContent = variablesText + cssText;
+    defs.appendChild(styleNode);
+    
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(clonedSvg);
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    const img = new Image();
+    img.onload = () => {
+      videoRecordCtx.clearRect(0, 0, videoRecordCanvas.width, videoRecordCanvas.height);
+      videoRecordCtx.fillStyle = '#111111';
+      videoRecordCtx.fillRect(0, 0, videoRecordCanvas.width, videoRecordCanvas.height);
+      videoRecordCtx.drawImage(img, 0, 0, videoRecordCanvas.width, videoRecordCanvas.height);
+      URL.revokeObjectURL(url);
+      
+      setTimeout(captureVideoFrame, 1000 / 30); // 30 FPS
+    };
+    img.onerror = (e) => {
+      console.error("图片渲染出错", e);
+      URL.revokeObjectURL(url);
+      setTimeout(captureVideoFrame, 1000 / 30);
+    };
+    img.src = url;
+  }
+  
+  captureVideoFrame();
+}
+
+function setupVideoRecorder() {
+  const recordBtn = document.getElementById('recordVideoBtn');
+  if (recordBtn) {
+    recordBtn.addEventListener('click', startRecordingVideo);
+  }
 }
 
 boot();

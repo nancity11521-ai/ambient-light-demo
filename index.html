@@ -217,20 +217,25 @@
             <svg class="light-canvas" viewBox="0 0 300 300" aria-label="氛围灯路径预览">
               <defs>
                 <linearGradient id="rainbowStroke" x1="22%" y1="12%" x2="82%" y2="88%">
-                  <stop offset="0%" stop-color="#39f5ce" />
-                  <stop offset="24%" stop-color="#7cf26d" />
-                  <stop offset="48%" stop-color="#ffd45f" />
-                  <stop offset="72%" stop-color="#ff6d7a" />
-                  <stop offset="100%" stop-color="#61a8ff" />
+                  <stop offset="0%" stop-color="#fcd34d" />
+                  <stop offset="12.5%" stop-color="#f97316" />
+                  <stop offset="25%" stop-color="#ec4899" />
+                  <stop offset="37.5%" stop-color="#a855f7" />
+                  <stop offset="50%" stop-color="#6366f1" />
+                  <stop offset="62.5%" stop-color="#06b6d4" />
+                  <stop offset="75%" stop-color="#10b981" />
+                  <stop offset="87.5%" stop-color="#84cc16" />
+                  <stop offset="100%" stop-color="#fcd34d" />
                 </linearGradient>
-                <linearGradient id="rippleSymmetricStroke" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#1e3a8a" />
-                  <stop offset="15%" stop-color="#2b85ff" />
-                  <stop offset="35%" stop-color="#33e6c5" />
-                  <stop offset="60%" stop-color="#36e67f" />
-                  <stop offset="85%" stop-color="#ffd45f" />
-                  <stop offset="100%" stop-color="#ff9933" />
-                </linearGradient>
+                <radialGradient id="rippleSymmetricStroke" cx="50%" cy="86%" r="55%">
+                  <stop offset="0%" stop-color="#fcd34d" />
+                  <stop offset="15%" stop-color="#f97316" />
+                  <stop offset="35%" stop-color="#ec4899" />
+                  <stop offset="55%" stop-color="#a855f7" />
+                  <stop offset="75%" stop-color="#6366f1" />
+                  <stop offset="90%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#10b981" />
+                </radialGradient>
                 <linearGradient id="meizuStroke" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#33e6c5" />
                   <stop offset="42%" stop-color="#33e6c5" />
@@ -288,6 +293,12 @@
               <span></span>
             </div>
           </div>
+        </div>
+
+        <div class="video-download-bar" style="margin: -5px 0 15px 0; width: 100%; display: flex; justify-content: center;">
+          <button id="recordVideoBtn" class="full-button" style="margin: 0; background: linear-gradient(135deg, #a855f7, #6366f1); box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;" type="button">
+            <span>🎥</span> 录制并下载动效视频 (WebM)
+          </button>
         </div>
 
         <div class="metric-bar" aria-label="当前参数">

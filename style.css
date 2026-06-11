@@ -1416,25 +1416,25 @@ h1 {
     opacity: 0; /* Completely black / dark gap flat hold */
   }
   25% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
     opacity: 0;
   }
   30% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
     opacity: 0;
   }
   37% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
   }
   50% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
   }
   63% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
   }
   70% {
-    stroke: #ff6d7a;
+    stroke: #ffd45f;
     opacity: 0;
   }
   71%, 79% {
@@ -1472,50 +1472,50 @@ h1 {
     opacity: 0; /* Completely dark gap hold */
   }
   23% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
     opacity: 0;
   }
   27% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
     opacity: 0;
   }
   34% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
   }
   41% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
   }
   45% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
   }
   52% {
-    stroke: #a855f7;
+    stroke: #ffd45f;
     opacity: 0;
   }
   53%, 59% {
     opacity: 0; /* Completely dark gap hold */
   }
   56% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
     opacity: 0;
   }
   60% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
     opacity: 0;
   }
   67% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
   }
   74% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
     opacity: calc(var(--intensity) * 0.95);
   }
   78% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
   }
   85% {
-    stroke: #ffd45f;
+    stroke: #36e67f;
     opacity: 0;
   }
   86%, 92% {
@@ -1536,107 +1536,107 @@ h1 {
 
 @keyframes quadBreathe {
   0%, 100% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
     opacity: calc(var(--intensity) * 0.95);
   }
   6% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
   }
   9% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
   }
   15% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
     opacity: 0;
   }
   16%, 20% {
     opacity: 0; /* Completely dark gap hold */
   }
   18% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
     opacity: 0;
   }
   21% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
     opacity: 0;
   }
   27% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
   }
   31% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
     opacity: calc(var(--intensity) * 0.95);
   }
   34% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
   }
   40% {
-    stroke: #61a8ff;
+    stroke: #ffd45f;
     opacity: 0;
   }
   41%, 45% {
     opacity: 0; /* Completely dark gap hold */
   }
   43% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
     opacity: 0;
   }
   46% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
     opacity: 0;
   }
   52% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
   }
   56% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
     opacity: calc(var(--intensity) * 0.95);
   }
   59% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
   }
   65% {
-    stroke: #f43f5e;
+    stroke: #36e67f;
     opacity: 0;
   }
   66%, 70% {
     opacity: 0; /* Completely dark gap hold */
   }
   68% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
     opacity: 0;
   }
   71% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
     opacity: 0;
   }
   77% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
   }
   81% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
     opacity: calc(var(--intensity) * 0.95);
   }
   84% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
   }
   90% {
-    stroke: #ffd45f;
+    stroke: #2b85ff;
     opacity: 0;
   }
   91%, 95% {
     opacity: 0; /* Completely dark gap hold */
   }
   93% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
     opacity: 0;
   }
   96% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
     opacity: 0;
   }
   98% {
-    stroke: #7cf26d;
+    stroke: #33e6c5;
   }
 }/* 音乐多色呼吸律动系列 (Multi-color Breathe Music Rhythm) */
 .mode-music-dual-color-breathe .preview-light,
@@ -1742,38 +1742,26 @@ h1 {
 /* 平滑彩虹流光灯 (Rainbow Flow Rhythm) */
 .mode-music-rainbow-flow .preview-light {
   display: block !important;
-  stroke: rgb(var(--light-rgb)) !important;
+  stroke: url("#rainbowStroke") !important; /* 统一使用动态可变的渐变模板 */
   stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
   stroke-dashoffset: 0;
   opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
   stroke-width: 13px; /* 13px 光心 */
   filter: url("#rainbowGlow") !important; /* 双重融合发光，完全擦除硬描边，且色彩极致鲜亮清晰 */
 }
-.mode-music-rainbow-flow .preview-glow {
-  display: none !important; /* 隐藏独立的大辉光层，直接由滤镜内部完美渲染出来 */
-}
-.mode-music-rainbow-flow .preview-track {
-  display: none !important;
-}
+.mode-music-rainbow-flow .preview-glow,
+.mode-music-rainbow-flow .preview-track,
 .mode-music-rainbow-flow .rainbow-flow-layer path {
   display: none !important; 
 }
 
-/* 当开启彩色流动 (.is-rainbow) 时，切换为高质感多色渐变 */
+/* 开启彩色流动 (.is-rainbow) 时，依然直接在单个 preview-light 上渲染统一渐变，简化渲染管线 */
 .is-rainbow.mode-music-rainbow-flow .preview-light {
-  display: none !important;
-}
-.is-rainbow.mode-music-rainbow-flow .preview-glow {
-  display: none !important;
-}
-.is-rainbow.mode-music-rainbow-flow .rainbow-flow-layer path {
   display: block !important;
-  stroke: url("#rainbowStroke") !important;
-  stroke-dasharray: var(--music-rainbow-flow-width) 9999px;
-  stroke-dashoffset: 0;
-  opacity: calc(var(--intensity) * var(--music-rainbow-flow-opacity));
-  stroke-width: 13px; /* 13px 光心 */
-  filter: url("#rainbowGlow") !important; /* 顺时针彩虹顺滑发光，无描边，颜色高清晰 */
+}
+.is-rainbow.mode-music-rainbow-flow .preview-glow,
+.is-rainbow.mode-music-rainbow-flow .rainbow-flow-layer path {
+  display: none !important;
 }
 
 /* 平滑对称涟漪灯 (Symmetric Ripple Breath Rhythm) */
