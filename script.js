@@ -46,6 +46,8 @@ const effects = [
   { id: "breathe", name: "呼吸灯", desc: "柔和明暗起伏，用于轻提醒" },
   { id: "progress", name: "进度填充", desc: "沿路径逐步填满，用于充电或倒计时" },
   { id: "charging", name: "极速快充", desc: "高能电流涌动注入，环身电量灌注与充盈脉冲" },
+  { id: "charge-cycle", name: "循环充能", desc: "顺时针从0%填充至100%，再从100%原路擦除至0%循环" },
+  { id: "charge-wipe", name: "顺时针充擦", desc: "顺时针从0%填充至100%，尾部顺时针擦除至0%循环" },
   { id: "loader", name: "加载巡航", desc: "短光段沿路径循环移动" },
   { id: "chase", name: "双段追逐", desc: "两段灯光首尾追随" },
   { id: "segment", name: "分段跳变", desc: "路径被切成短段，节奏式点亮" },
