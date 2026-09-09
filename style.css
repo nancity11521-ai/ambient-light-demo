@@ -33,6 +33,8 @@
   --dash-scan-off: 702;
   --dash-battery-start: 108;
   --dash-battery-mid: 558;
+  --dash-charge-pulse-on: 162;
+  --dash-charge-pulse-off: 738;
   --offset-small: -72;
   --offset-scan-start: 90;
   --offset-scan-end: -900;
@@ -1263,6 +1265,21 @@ h1 {
   animation: batteryWave calc(5.8s / var(--speed)) ease-in-out infinite;
 }
 
+.mode-charging .preview-light {
+  stroke-dasharray: 0 var(--path-length);
+  animation: chargingWave calc(3.6s / var(--speed)) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.mode-charging .preview-light-alt {
+  opacity: calc(var(--intensity) * 0.95);
+  stroke-dasharray: var(--dash-charge-pulse-on) var(--dash-charge-pulse-off);
+  animation: chargePulseStream calc(1.05s / var(--speed)) linear infinite;
+}
+
+.mode-charging .preview-glow {
+  animation: chargingGlow calc(3.6s / var(--speed)) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
 .is-rainbow.mode-steady .rainbow-flow-layer path {
   stroke-dasharray: var(--path-length) 0;
   animation: steadyGlow calc(2.8s / var(--speed)) ease-in-out infinite;
@@ -1343,6 +1360,16 @@ h1 {
 .is-rainbow.mode-battery .rainbow-flow-layer path {
   stroke-dasharray: var(--dash-battery-start) var(--path-length);
   animation: batteryWave calc(5.8s / var(--speed)) ease-in-out infinite;
+}
+
+.is-rainbow.mode-charging .rainbow-flow-layer path {
+  stroke-dasharray: 0 var(--path-length);
+  animation: chargingWave calc(3.6s / var(--speed)) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.is-rainbow.mode-charging .preview-glow {
+  stroke: url("#rainbowStroke");
+  animation: chargingGlow calc(3.6s / var(--speed)) cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
 }
 
 .mode-custom-solid .preview-light {
@@ -2088,6 +2115,85 @@ h1 {
   100% {
     stroke-dasharray: var(--path-length) 0;
     stroke-dashoffset: var(--offset-small);
+  }
+}
+
+@keyframes chargingWave {
+  0% {
+    stroke-dasharray: 0 var(--path-length);
+    opacity: calc(var(--intensity) * 0.65);
+    stroke-dashoffset: 0;
+  }
+
+  50% {
+    stroke-dasharray: var(--path-length) 0;
+    opacity: calc(var(--intensity) * 0.95);
+    stroke-dashoffset: 0;
+  }
+
+  62% {
+    stroke-dasharray: var(--path-length) 0;
+    opacity: calc(var(--intensity) * 1.35);
+    filter: drop-shadow(0 0 16px rgb(var(--light-rgb) / 1)) drop-shadow(0 0 36px rgb(var(--light-rgb) / 0.85));
+  }
+
+  74% {
+    stroke-dasharray: var(--path-length) 0;
+    opacity: calc(var(--intensity) * 0.95);
+  }
+
+  88% {
+    stroke-dasharray: var(--path-length) 0;
+    opacity: 0;
+  }
+
+  100% {
+    stroke-dasharray: 0 var(--path-length);
+    opacity: 0;
+  }
+}
+
+@keyframes chargePulseStream {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: calc(var(--intensity) * 0.88);
+  }
+
+  50% {
+    opacity: calc(var(--intensity) * 1);
+  }
+
+  100% {
+    stroke-dashoffset: var(--offset-full);
+    opacity: calc(var(--intensity) * 0.88);
+  }
+}
+
+@keyframes chargingGlow {
+  0% {
+    opacity: calc(var(--intensity) * 0.15);
+    stroke-width: 24;
+  }
+
+  50% {
+    opacity: calc(var(--intensity) * 0.32);
+    stroke-width: 28;
+  }
+
+  62% {
+    opacity: calc(var(--intensity) * 0.65);
+    stroke-width: 38;
+  }
+
+  74% {
+    opacity: calc(var(--intensity) * 0.28);
+    stroke-width: 28;
+  }
+
+  88%,
+  100% {
+    opacity: calc(var(--intensity) * 0.12);
+    stroke-width: 24;
   }
 }
 
