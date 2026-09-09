@@ -1291,11 +1291,12 @@ h1 {
 
 .mode-charge-wipe .preview-light {
   stroke-dasharray: var(--path-length) var(--path-length);
-  animation: chargeWipeWave calc(3.4s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: chargeWipeWave calc(2.05s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .mode-charge-wipe .preview-glow {
-  animation: chargeWipeGlow calc(3.4s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--path-length) var(--path-length);
+  animation: chargeWipeGlow calc(2.05s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .is-rainbow.mode-steady .rainbow-flow-layer path {
@@ -1402,12 +1403,13 @@ h1 {
 
 .is-rainbow.mode-charge-wipe .rainbow-flow-layer path {
   stroke-dasharray: var(--path-length) var(--path-length);
-  animation: chargeWipeWave calc(3.4s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: chargeWipeWave calc(2.05s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .is-rainbow.mode-charge-wipe .preview-glow {
   stroke: url("#rainbowStroke");
-  animation: chargeWipeGlow calc(3.4s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--path-length) var(--path-length);
+  animation: chargeWipeGlow calc(2.05s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .mode-custom-solid .preview-light {
@@ -2307,66 +2309,61 @@ h1 {
 @keyframes chargeWipeWave {
   0% {
     stroke-dashoffset: var(--path-length);
-    opacity: calc(var(--intensity) * 0.7);
+    opacity: calc(var(--intensity) * 0.85);
   }
 
-  44% {
+  47% {
     stroke-dashoffset: 0;
     opacity: calc(var(--intensity) * 0.95);
+    filter: drop-shadow(0 0 12px rgb(var(--light-rgb) / 0.9));
   }
 
-  49% {
+  50% {
     stroke-dashoffset: 0;
     opacity: calc(var(--intensity) * 1.35);
-    filter: drop-shadow(0 0 16px rgb(var(--light-rgb) / 1)) drop-shadow(0 0 36px rgb(var(--light-rgb) / 0.85));
+    filter: drop-shadow(0 0 18px rgb(var(--light-rgb) / 1)) drop-shadow(0 0 38px rgb(var(--light-rgb) / 0.85));
   }
 
-  54% {
+  53% {
     stroke-dashoffset: 0;
     opacity: calc(var(--intensity) * 0.95);
+    filter: drop-shadow(0 0 12px rgb(var(--light-rgb) / 0.9));
   }
 
-  94% {
-    stroke-dashoffset: calc(-1 * var(--path-length));
-    opacity: calc(var(--intensity) * 0.7);
-  }
-
-  96%,
   100% {
     stroke-dashoffset: calc(-1 * var(--path-length));
-    opacity: 0;
+    opacity: calc(var(--intensity) * 0.85);
   }
 }
 
 @keyframes chargeWipeGlow {
   0% {
-    opacity: calc(var(--intensity) * 0.12);
+    stroke-dashoffset: var(--path-length);
+    opacity: calc(var(--intensity) * 0.15);
     stroke-width: 24;
   }
 
-  44% {
-    opacity: calc(var(--intensity) * 0.3);
+  47% {
+    stroke-dashoffset: 0;
+    opacity: calc(var(--intensity) * 0.32);
     stroke-width: 28;
   }
 
-  49% {
+  50% {
+    stroke-dashoffset: 0;
     opacity: calc(var(--intensity) * 0.65);
     stroke-width: 38;
   }
 
-  54% {
-    opacity: calc(var(--intensity) * 0.3);
+  53% {
+    stroke-dashoffset: 0;
+    opacity: calc(var(--intensity) * 0.32);
     stroke-width: 28;
   }
 
-  94% {
-    opacity: calc(var(--intensity) * 0.12);
-    stroke-width: 24;
-  }
-
-  96%,
   100% {
-    opacity: 0;
+    stroke-dashoffset: calc(-1 * var(--path-length));
+    opacity: calc(var(--intensity) * 0.15);
     stroke-width: 24;
   }
 }
