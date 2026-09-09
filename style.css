@@ -17,6 +17,7 @@
   --custom-gap: 0.66;
   --custom-tempo: 1;
   --custom-low: 0.42;
+  --path-length: 900;
   --offset-full: -900;
   --offset-half: -450;
   --dash-loader-on: 144;
@@ -2132,7 +2133,7 @@ h1 {
   }
 
   100% {
-    stroke-dashoffset: calc(-1 * var(--path-length));
+    stroke-dashoffset: var(--offset-full);
   }
 }
 
@@ -2146,7 +2147,7 @@ h1 {
   }
 
   100% {
-    stroke-dashoffset: calc(-1 * var(--path-length));
+    stroke-dashoffset: var(--offset-full);
   }
 }
 

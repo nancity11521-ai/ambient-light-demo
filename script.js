@@ -81,7 +81,7 @@ const musicEffects = [
 ];
 
 const scenarios = [
-  { id: "charge", name: "充电", shape: "capsule", effect: "charging", color: "#3bf58f", speed: 1.0, intensity: 88 },
+  { id: "charge", name: "充电", shape: "circle", effect: "charging", color: "#3bf58f", speed: 1.0, intensity: 88 },
   { id: "call", name: "来电", shape: "camera-island", effect: "gather", color: "#d9b35f", speed: 1.15, intensity: 88 },
   { id: "message", name: "消息", shape: "notch", effect: "spark", color: "#58b8ff", speed: 1.35, intensity: 82 },
   { id: "alert", name: "提醒", shape: "shield", effect: "warning", color: "#ff5a55", speed: 1.65, intensity: 96 },
