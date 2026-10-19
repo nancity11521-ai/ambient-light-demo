@@ -46,6 +46,7 @@ const effects = [
   { id: "breathe", name: "呼吸灯", desc: "柔和明暗起伏，用于轻提醒" },
   { id: "progress", name: "进度填充", desc: "沿路径逐步填满，用于充电或倒计时" },
   { id: "charging", name: "充电", desc: "0%➜100%顺时针流光灌满，100%➜0%顺时针追随擦除循环" },
+  { id: "loading", name: "加载", desc: "弧光顺时针伸缩回旋，前冲延展与尾部追赶循环" },
   { id: "loader", name: "加载巡航", desc: "短光段沿路径循环移动" },
   { id: "chase", name: "双段追逐", desc: "两段灯光首尾追随" },
   { id: "segment", name: "分段跳变", desc: "路径被切成短段，节奏式点亮" },
@@ -82,6 +83,7 @@ const musicEffects = [
 
 const scenarios = [
   { id: "charge", name: "充电", shape: "circle", effect: "charging", color: "#3bf58f", speed: 1.0, intensity: 88 },
+  { id: "loading", name: "加载", shape: "circle", effect: "loading", color: "#39f5ce", speed: 1.0, intensity: 90 },
   { id: "call", name: "来电", shape: "camera-island", effect: "gather", color: "#d9b35f", speed: 1.15, intensity: 88 },
   { id: "message", name: "消息", shape: "notch", effect: "spark", color: "#58b8ff", speed: 1.35, intensity: 82 },
   { id: "alert", name: "提醒", shape: "shield", effect: "warning", color: "#ff5a55", speed: 1.65, intensity: 96 },
@@ -518,6 +520,10 @@ function setPathMetrics(length) {
     "--offset-half": -length * 0.5,
     "--dash-loader-on": length * 0.16,
     "--dash-loader-off": length * 0.84,
+    "--dash-loading-min": length * 0.08,
+    "--dash-loading-max": length * 0.75,
+    "--dash-loading-gap": length * 1.5,
+    "--offset-loading-mid": -length * 0.25,
     "--dash-chase-on": length * 0.12,
     "--dash-chase-off": length * 0.88,
     "--dash-segment-on": length * 0.08,

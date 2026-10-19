@@ -22,6 +22,10 @@
   --offset-half: -450;
   --dash-loader-on: 144;
   --dash-loader-off: 756;
+  --dash-loading-min: 72;
+  --dash-loading-max: 675;
+  --dash-loading-gap: 1350;
+  --offset-loading-mid: -225;
   --dash-chase-on: 108;
   --dash-chase-off: 792;
   --dash-segment-on: 72;
@@ -1280,6 +1284,16 @@ h1 {
   animation: chargingGlow calc(2.4s / var(--speed)) ease-in-out infinite;
 }
 
+.mode-loading .preview-light {
+  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+  animation: loadingWave calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.mode-loading .preview-glow {
+  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+  animation: loadingGlow calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 .is-rainbow.mode-steady .rainbow-flow-layer path {
   stroke-dasharray: var(--path-length) 0;
   animation: steadyGlow calc(2.8s / var(--speed)) ease-in-out infinite;
@@ -1375,6 +1389,17 @@ h1 {
   stroke: url("#rainbowStroke");
   stroke-dasharray: var(--path-length) var(--path-length);
   animation: chargingGlow calc(2.4s / var(--speed)) ease-in-out infinite;
+}
+
+.is-rainbow.mode-loading .rainbow-flow-layer path {
+  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+  animation: loadingWave calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.is-rainbow.mode-loading .preview-glow {
+  stroke: url("#rainbowStroke");
+  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+  animation: loadingGlow calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .mode-custom-solid .preview-light {
@@ -2148,6 +2173,43 @@ h1 {
 
   100% {
     stroke-dashoffset: var(--offset-full);
+  }
+}
+
+@keyframes loadingWave {
+  0% {
+    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dashoffset: 0;
+  }
+
+  50% {
+    stroke-dasharray: var(--dash-loading-max) var(--dash-loading-gap);
+    stroke-dashoffset: var(--offset-loading-mid);
+  }
+
+  100% {
+    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dashoffset: var(--offset-full);
+  }
+}
+
+@keyframes loadingGlow {
+  0% {
+    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dashoffset: 0;
+    opacity: calc(var(--intensity) * 0.65);
+  }
+
+  50% {
+    stroke-dasharray: var(--dash-loading-max) var(--dash-loading-gap);
+    stroke-dashoffset: var(--offset-loading-mid);
+    opacity: var(--intensity);
+  }
+
+  100% {
+    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dashoffset: var(--offset-full);
+    opacity: calc(var(--intensity) * 0.65);
   }
 }
 
