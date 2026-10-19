@@ -23,9 +23,13 @@
   --dash-loader-on: 144;
   --dash-loader-off: 756;
   --dash-loading-min: 72;
-  --dash-loading-max: 675;
-  --dash-loading-gap: 1350;
-  --offset-loading-mid: -225;
+  --dash-loading-max: 648;
+  --dash-loading-mid: 360;
+  --gap-loading-min: 828;
+  --gap-loading-max: 252;
+  --gap-loading-mid: 540;
+  --offset-loading-p1: -198;
+  --offset-loading-p2: -585;
   --dash-chase-on: 108;
   --dash-chase-off: 792;
   --dash-segment-on: 72;
@@ -1285,13 +1289,13 @@ h1 {
 }
 
 .mode-loading .preview-light {
-  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
-  animation: loadingWave calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
+  animation: loadingWave calc(1.5s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .mode-loading .preview-glow {
-  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
-  animation: loadingGlow calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
+  animation: loadingGlow calc(1.5s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .is-rainbow.mode-steady .rainbow-flow-layer path {
@@ -1392,14 +1396,14 @@ h1 {
 }
 
 .is-rainbow.mode-loading .rainbow-flow-layer path {
-  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
-  animation: loadingWave calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
+  animation: loadingWave calc(1.5s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .is-rainbow.mode-loading .preview-glow {
   stroke: url("#rainbowStroke");
-  stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
-  animation: loadingGlow calc(2s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
+  animation: loadingGlow calc(1.5s / var(--speed)) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .mode-custom-solid .preview-light {
@@ -2178,38 +2182,49 @@ h1 {
 
 @keyframes loadingWave {
   0% {
-    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
     stroke-dashoffset: 0;
   }
 
-  50% {
-    stroke-dasharray: var(--dash-loading-max) var(--dash-loading-gap);
-    stroke-dashoffset: var(--offset-loading-mid);
+  40% {
+    stroke-dasharray: var(--dash-loading-max) var(--gap-loading-max);
+    stroke-dashoffset: var(--offset-loading-p1);
+  }
+
+  70% {
+    stroke-dasharray: var(--dash-loading-mid) var(--gap-loading-mid);
+    stroke-dashoffset: var(--offset-loading-p2);
   }
 
   100% {
-    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
     stroke-dashoffset: var(--offset-full);
   }
 }
 
 @keyframes loadingGlow {
   0% {
-    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
     stroke-dashoffset: 0;
-    opacity: calc(var(--intensity) * 0.65);
+    opacity: calc(var(--intensity) * 0.45);
   }
 
-  50% {
-    stroke-dasharray: var(--dash-loading-max) var(--dash-loading-gap);
-    stroke-dashoffset: var(--offset-loading-mid);
+  40% {
+    stroke-dasharray: var(--dash-loading-max) var(--gap-loading-max);
+    stroke-dashoffset: var(--offset-loading-p1);
     opacity: var(--intensity);
   }
 
+  70% {
+    stroke-dasharray: var(--dash-loading-mid) var(--gap-loading-mid);
+    stroke-dashoffset: var(--offset-loading-p2);
+    opacity: calc(var(--intensity) * 0.78);
+  }
+
   100% {
-    stroke-dasharray: var(--dash-loading-min) var(--dash-loading-gap);
+    stroke-dasharray: var(--dash-loading-min) var(--gap-loading-min);
     stroke-dashoffset: var(--offset-full);
-    opacity: calc(var(--intensity) * 0.65);
+    opacity: calc(var(--intensity) * 0.45);
   }
 }
 
